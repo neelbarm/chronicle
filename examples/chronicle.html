@@ -1,0 +1,1759 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="generator" content="chronicle 0.1.0">
+<meta name="color-scheme" content="dark">
+<title>chronicle — chronicle</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230a0c12'/%3E%3Cpath d='M8 22V10h3l5 8 5-8h3v12' stroke='%234f8cff' stroke-width='2.5' fill='none' stroke-linejoin='round'/%3E%3C/svg%3E">
+<style>
+:root {
+  --bg: #07080c;
+  --bg-2: #0b0e15;
+  --panel: rgba(255, 255, 255, 0.032);
+  --panel-line: rgba(255, 255, 255, 0.085);
+  --ink: #f2f4f8;
+  --ink-2: #b9c0cf;
+  --ink-3: #79839a;
+  --accent: #5b8cff;
+  --accent-2: #9d6bff;
+  --accent-3: #37d0c0;
+  --warm: #ff8a4c;
+  --hot: #ff5470;
+  --radius: 18px;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --shadow: 0 30px 80px -40px rgba(0, 0, 0, 0.9);
+  --maxw: 1140px;
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter",
+    "Helvetica Neue", Helvetica, Arial, system-ui, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+}
+
+* { box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font);
+  font-feature-settings: "tnum" 1, "cv02" 1;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.55;
+  letter-spacing: -0.011em;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- ambient background ---------- */
+.aurora {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  overflow: hidden;
+  pointer-events: none;
+  background: radial-gradient(120% 80% at 50% -10%, #11172a 0%, var(--bg) 58%);
+}
+.aurora span {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.32;
+  will-change: transform;
+}
+.aurora span:nth-child(1) {
+  width: 52vw; height: 52vw; left: -12vw; top: -14vw;
+  background: radial-gradient(circle, rgba(91, 140, 255, 0.85), transparent 62%);
+  animation: drift1 34s var(--ease) infinite alternate;
+}
+.aurora span:nth-child(2) {
+  width: 46vw; height: 46vw; right: -10vw; top: 6vh;
+  background: radial-gradient(circle, rgba(157, 107, 255, 0.7), transparent 62%);
+  animation: drift2 44s var(--ease) infinite alternate;
+}
+.aurora span:nth-child(3) {
+  width: 42vw; height: 42vw; left: 28vw; top: 52vh;
+  background: radial-gradient(circle, rgba(55, 208, 192, 0.38), transparent 64%);
+  animation: drift3 52s var(--ease) infinite alternate;
+}
+@keyframes drift1 { to { transform: translate3d(8vw, 6vh, 0) scale(1.15); } }
+@keyframes drift2 { to { transform: translate3d(-7vw, 10vh, 0) scale(1.1); } }
+@keyframes drift3 { to { transform: translate3d(5vw, -8vh, 0) scale(1.2); } }
+
+.grain {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.4;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+  background-size: 3px 3px;
+  mask-image: radial-gradient(90% 70% at 50% 20%, #000 20%, transparent 100%);
+}
+
+/* ---------- nav ---------- */
+.topnav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  backdrop-filter: saturate(180%) blur(22px);
+  -webkit-backdrop-filter: saturate(180%) blur(22px);
+  background: rgba(8, 10, 16, 0.55);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  transform: translateY(-100%);
+  transition: transform 0.6s var(--ease), background 0.4s var(--ease);
+}
+.topnav.visible { transform: translateY(0); }
+.topnav-inner {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 0 24px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--ink);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+.brand-mark {
+  width: 9px; height: 9px; border-radius: 3px;
+  background: linear-gradient(140deg, var(--accent), var(--accent-2));
+  box-shadow: 0 0 14px rgba(91, 140, 255, 0.8);
+}
+.nav-links {
+  display: flex;
+  gap: 2px;
+  margin-left: auto;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.nav-links::-webkit-scrollbar { display: none; }
+.nav-link {
+  color: var(--ink-3);
+  text-decoration: none;
+  font-size: 12.5px;
+  padding: 6px 11px;
+  border-radius: 999px;
+  white-space: nowrap;
+  transition: color 0.3s var(--ease), background 0.3s var(--ease);
+}
+.nav-link:hover { color: var(--ink); }
+.nav-link.active {
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.08);
+}
+.nav-meta {
+  color: var(--ink-3);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin-left: 10px;
+}
+.scroll-progress {
+  height: 2px;
+  background: rgba(255, 255, 255, 0.06);
+}
+.scroll-progress i {
+  display: block;
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2) 60%, var(--accent-3));
+  box-shadow: 0 0 12px rgba(91, 140, 255, 0.6);
+}
+
+/* ---------- hero ---------- */
+.hero {
+  min-height: 100svh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 96px 24px 64px;
+}
+.hero-inner {
+  max-width: var(--maxw);
+  width: 100%;
+  text-align: center;
+}
+.hero-eyebrow {
+  margin: 0 0 18px;
+  font-size: 13px;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.hero-title {
+  margin: 0;
+  font-size: clamp(3rem, 12vw, 8.5rem);
+  line-height: 0.92;
+  letter-spacing: -0.052em;
+  font-weight: 700;
+  background: linear-gradient(180deg, #ffffff 20%, #9aa7c4 118%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  overflow-wrap: anywhere;
+}
+.hero-dates {
+  margin: 20px 0 46px;
+  color: var(--ink-2);
+  font-size: clamp(0.95rem, 2.2vw, 1.15rem);
+}
+.hero-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(128px, 1fr));
+  gap: 10px;
+  max-width: 940px;
+  margin: 0 auto;
+}
+.stat {
+  padding: 18px 12px;
+  border-radius: 14px;
+  background: var(--panel);
+  border: 1px solid var(--panel-line);
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.8s var(--ease), transform 0.8s var(--ease), border-color 0.4s var(--ease);
+}
+.stat.in { opacity: 1; transform: none; }
+.stat:hover { border-color: rgba(255, 255, 255, 0.2); }
+.stat b {
+  display: block;
+  font-size: clamp(1.35rem, 3.4vw, 2rem);
+  font-weight: 650;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+.stat span {
+  display: block;
+  margin-top: 4px;
+  font-size: 11.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.hero-summary {
+  max-width: 680px;
+  margin: 46px auto 0;
+  color: var(--ink-2);
+  font-size: 15.5px;
+  line-height: 1.75;
+  text-align: left;
+}
+.scroll-cue {
+  display: block;
+  width: 22px;
+  height: 36px;
+  margin: 52px auto 0;
+  border: 1.5px solid rgba(255, 255, 255, 0.24);
+  border-radius: 12px;
+  position: relative;
+}
+.scroll-cue span {
+  position: absolute;
+  left: 50%;
+  top: 8px;
+  width: 3px;
+  height: 7px;
+  margin-left: -1.5px;
+  border-radius: 2px;
+  background: var(--ink-2);
+  animation: cue 1.9s var(--ease) infinite;
+}
+@keyframes cue {
+  0% { opacity: 0; transform: translateY(0); }
+  35% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(12px); }
+}
+
+/* ---------- sections ---------- */
+.section {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: clamp(72px, 13vh, 150px) 24px;
+  scroll-margin-top: 60px;
+}
+.section-head { max-width: 720px; margin-bottom: 40px; }
+.eyebrow {
+  margin: 0 0 12px;
+  font-size: 12px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.section-head h2 {
+  margin: 0;
+  font-size: clamp(2rem, 5.4vw, 3.4rem);
+  letter-spacing: -0.038em;
+  line-height: 1.04;
+  font-weight: 650;
+}
+.lede {
+  margin: 14px 0 0;
+  color: var(--ink-2);
+  font-size: clamp(1rem, 2.1vw, 1.18rem);
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(26px);
+  transition: opacity 0.9s var(--ease), transform 0.9s var(--ease);
+  will-change: opacity, transform;
+}
+.reveal.in { opacity: 1; transform: none; }
+
+.panel {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.015));
+  border: 1px solid var(--panel-line);
+  border-radius: var(--radius);
+  padding: 22px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow);
+}
+.panel-head { margin-bottom: 18px; }
+.panel-head h3 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+.panel-head p {
+  margin: 4px 0 0;
+  color: var(--ink-3);
+  font-size: 13px;
+}
+
+/* ---------- era band + cards ---------- */
+.era-band {
+  display: flex;
+  height: 84px;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid var(--panel-line);
+  margin-bottom: 26px;
+  background: rgba(255, 255, 255, 0.02);
+}
+.era-seg {
+  position: relative;
+  flex-grow: 0;
+  overflow: hidden;
+  cursor: pointer;
+  border-right: 1px solid rgba(7, 8, 12, 0.7);
+  transform-origin: left center;
+  transition: filter 0.4s var(--ease), flex-basis 0.9s var(--ease);
+  filter: saturate(0.85);
+}
+.era-seg:last-child { border-right: 0; }
+.era-seg:hover, .era-seg.active { filter: saturate(1.25) brightness(1.12); }
+.era-seg i {
+  position: absolute;
+  inset: 0;
+  opacity: 0.85;
+}
+.era-seg u {
+  position: absolute;
+  left: 12px;
+  right: 8px;
+  bottom: 9px;
+  text-decoration: none;
+  font-size: 11.5px;
+  color: #fff;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.7);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.era-seg em {
+  position: absolute;
+  left: 12px;
+  top: 10px;
+  font-style: normal;
+  font-size: 12.5px;
+  font-weight: 640;
+  color: #fff;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.75);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: calc(100% - 20px);
+}
+.era-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+}
+.era-card {
+  background: var(--panel);
+  border: 1px solid var(--panel-line);
+  border-radius: 16px;
+  padding: 20px;
+  transition: transform 0.6s var(--ease), border-color 0.4s var(--ease), background 0.4s var(--ease);
+}
+.era-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.055);
+}
+.era-card .era-rule { height: 3px; border-radius: 2px; margin-bottom: 14px; }
+.era-card h4 {
+  margin: 0 0 3px;
+  font-size: 19px;
+  letter-spacing: -0.024em;
+  font-weight: 640;
+}
+.era-card .era-range { color: var(--ink-3); font-size: 12.5px; margin: 0 0 14px; }
+.era-card dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 5px 14px;
+  margin: 0;
+  font-size: 13px;
+}
+.era-card dt { color: var(--ink-3); }
+.era-card dd { margin: 0; color: var(--ink-2); overflow-wrap: anywhere; }
+
+/* ---------- charts ---------- */
+.chart { width: 100%; }
+.chart svg, .graph { display: block; width: 100%; overflow: visible; }
+.axis-label { fill: var(--ink-3); font-size: 10.5px; }
+.grid-line { stroke: rgba(255, 255, 255, 0.07); stroke-width: 1; }
+
+.heatmap-wrap { overflow-x: auto; padding-bottom: 6px; }
+.heatmap { min-width: 620px; }
+.hm-cell {
+  rx: 2.5;
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: opacity 0.5s var(--ease), transform 0.5s var(--ease);
+  opacity: 0;
+  transform: scale(0.3);
+}
+.hm-cell.in { opacity: 1; transform: scale(1); }
+.hm-cell:hover { stroke: #fff; stroke-width: 1.2; }
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin-top: 16px;
+  font-size: 12.5px;
+  color: var(--ink-2);
+}
+.legend b { font-weight: 500; }
+.legend i {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  margin-right: 7px;
+  vertical-align: -1px;
+}
+
+/* ---------- treemap ---------- */
+.treemap-wrap { position: relative; }
+.treemap {
+  position: relative;
+  width: 100%;
+  height: min(62vh, 560px);
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.25);
+}
+.tm-tile {
+  position: absolute;
+  border-radius: 4px;
+  border: 1px solid rgba(7, 8, 12, 0.85);
+  overflow: hidden;
+  cursor: default;
+  opacity: 0;
+  transform: scale(0.86);
+  transition: opacity 0.55s var(--ease), transform 0.55s var(--ease),
+    left 0.6s var(--ease), top 0.6s var(--ease), width 0.6s var(--ease), height 0.6s var(--ease),
+    filter 0.3s var(--ease);
+}
+.tm-tile.in { opacity: 1; transform: none; }
+.tm-tile.dir { cursor: zoom-in; }
+.tm-tile:hover { filter: brightness(1.28); z-index: 2; }
+.tm-tile span {
+  position: absolute;
+  left: 6px;
+  top: 4px;
+  right: 4px;
+  font-size: 10.5px;
+  line-height: 1.25;
+  color: rgba(255, 255, 255, 0.94);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.75);
+  pointer-events: none;
+  word-break: break-all;
+}
+.crumbs { color: var(--ink-2); }
+.crumbs button {
+  background: none;
+  border: 0;
+  color: var(--accent);
+  font: inherit;
+  cursor: pointer;
+  padding: 0 2px;
+}
+.crumbs button:hover { text-decoration: underline; }
+.churn-scale {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+  font-size: 12px;
+  color: var(--ink-3);
+}
+.churn-scale .bar {
+  flex: 1;
+  height: 7px;
+  border-radius: 4px;
+  max-width: 260px;
+}
+
+/* ---------- knowledge ---------- */
+.stat-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 14px;
+  margin-bottom: 20px;
+}
+.stat-card {
+  background: var(--panel);
+  border: 1px solid var(--panel-line);
+  border-radius: 16px;
+  padding: 20px;
+}
+.stat-card b {
+  display: block;
+  font-size: 2.3rem;
+  letter-spacing: -0.035em;
+  line-height: 1;
+  font-weight: 650;
+}
+.stat-card span {
+  display: block;
+  margin-top: 8px;
+  color: var(--ink-3);
+  font-size: 12.5px;
+}
+.own-row { margin-bottom: 15px; }
+.own-head {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  margin-bottom: 6px;
+  gap: 12px;
+}
+.own-head code {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+.own-head em { font-style: normal; color: var(--ink-3); white-space: nowrap; }
+.own-bar {
+  display: flex;
+  height: 12px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.05);
+}
+.own-bar i {
+  height: 100%;
+  width: 0;
+  transition: width 1.1s var(--ease);
+}
+
+/* ---------- graph + table ---------- */
+.graph-wrap { width: 100%; }
+.graph { height: min(58vh, 520px); }
+.g-edge {
+  stroke: rgba(160, 180, 230, 0.32);
+  stroke-linecap: round;
+  transition: stroke 0.3s var(--ease);
+}
+.g-node { cursor: grab; }
+.g-node:active { cursor: grabbing; }
+.g-node circle { transition: filter 0.3s var(--ease); }
+.g-node:hover circle { filter: brightness(1.4); }
+.g-node text {
+  fill: var(--ink-2);
+  font-size: 10px;
+  pointer-events: none;
+}
+
+.table-wrap { overflow-x: auto; }
+.table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.table th {
+  text-align: left;
+  color: var(--ink-3);
+  font-weight: 500;
+  font-size: 11.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--panel-line);
+  white-space: nowrap;
+}
+.table td {
+  padding: 9px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.045);
+  color: var(--ink-2);
+  vertical-align: top;
+}
+.table tr:hover td { background: rgba(255, 255, 255, 0.032); }
+.table code {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+.bar-cell { min-width: 90px; }
+.mini-bar {
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  width: 0;
+  transition: width 1s var(--ease);
+}
+
+/* ---------- story ---------- */
+.story { max-width: 740px; }
+.story-era { margin-bottom: 44px; }
+.story-era h4 {
+  margin: 0 0 4px;
+  font-size: 1.6rem;
+  letter-spacing: -0.028em;
+  font-weight: 640;
+}
+.story-era .era-range {
+  margin: 0 0 14px;
+  color: var(--ink-3);
+  font-size: 13px;
+}
+.story-era p {
+  margin: 0;
+  font-size: 16.5px;
+  line-height: 1.8;
+  color: var(--ink-2);
+}
+.story-era code, .hero-summary code, .era-card code {
+  font-family: var(--mono);
+  font-size: 0.88em;
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: 5px;
+  padding: 1px 5px;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+.story-rule {
+  height: 3px;
+  width: 54px;
+  border-radius: 2px;
+  margin-bottom: 16px;
+}
+
+/* ---------- tooltip ---------- */
+.tooltip {
+  position: fixed;
+  z-index: 90;
+  pointer-events: none;
+  padding: 10px 12px;
+  border-radius: 11px;
+  background: rgba(16, 19, 28, 0.94);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  box-shadow: 0 18px 44px -18px rgba(0, 0, 0, 0.9);
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--ink-2);
+  max-width: 320px;
+  opacity: 0;
+  transform: translate3d(0, 0, 0) scale(0.95);
+  transition: opacity 0.22s var(--ease), transform 0.22s var(--ease);
+}
+.tooltip.show { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+.tooltip b { color: var(--ink); font-weight: 600; }
+.tooltip .tt-title {
+  display: block;
+  color: var(--ink);
+  font-weight: 600;
+  margin-bottom: 4px;
+  font-family: var(--mono);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.tooltip .tt-row { display: flex; justify-content: space-between; gap: 18px; }
+.tooltip .tt-row span:last-child { color: var(--ink); }
+
+/* ---------- footer ---------- */
+.footer {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 50px 24px 80px;
+  border-top: 1px solid var(--panel-line);
+  color: var(--ink-3);
+  font-size: 12.5px;
+}
+.footer p { margin: 0 0 6px; }
+.footer code { font-family: var(--mono); }
+.footer-dim { opacity: 0.75; }
+
+@media (max-width: 760px) {
+  .nav-meta { display: none; }
+  .hero-summary { font-size: 15px; }
+  .era-band { height: 66px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+  .reveal, .stat, .tm-tile, .hm-cell { opacity: 1 !important; transform: none !important; }
+}
+
+</style>
+</head>
+<body>
+<div class="grain" aria-hidden="true"></div>
+<div class="aurora" aria-hidden="true"><span></span><span></span><span></span></div>
+
+<nav class="topnav" id="topnav">
+  <div class="topnav-inner">
+    <a class="brand" href="#top"><span class="brand-mark" aria-hidden="true"></span><span class="brand-name">chronicle</span></a>
+    <div class="nav-links"><a class="nav-link" href="#eras" data-nav="eras">Eras</a><a class="nav-link" href="#rhythm" data-nav="rhythm">Rhythm</a><a class="nav-link" href="#growth" data-nav="growth">Growth</a><a class="nav-link" href="#hotspots" data-nav="hotspots">Hotspots</a><a class="nav-link" href="#knowledge" data-nav="knowledge">Knowledge</a><a class="nav-link" href="#coupling" data-nav="coupling">Coupling</a><a class="nav-link" href="#story" data-nav="story">Story</a></div>
+    <span class="nav-meta">chronicle</span>
+  </div>
+  <div class="scroll-progress"><i id="progressBar"></i></div>
+</nav>
+
+<main id="top">
+  <header class="hero" id="hero">
+    <div class="hero-inner">
+      <p class="hero-eyebrow reveal">A git history, read end to end</p>
+      <h1 class="hero-title reveal" id="heroTitle">chronicle</h1>
+      <p class="hero-dates reveal" id="heroDates"></p>
+      <div class="hero-stats" id="heroStats"></div>
+      <p class="hero-summary reveal" id="heroSummary"></p>
+      <a class="scroll-cue reveal" href="#eras" aria-label="Scroll to the chapters"><span></span></a>
+    </div>
+  </header>
+
+<section class="section" id="eras">
+  <header class="section-head reveal">
+    <p class="eyebrow">Eras</p>
+    <h2>Chapters</h2>
+    <p class="lede">Every project has phases. These were found, not declared.</p>
+  </header>
+  <div class="era-band reveal" id="eraBand"></div>
+   <div class="era-cards" id="eraCards"></div>
+</section>
+
+<section class="section" id="rhythm">
+  <header class="section-head reveal">
+    <p class="eyebrow">Rhythm</p>
+    <h2>The rhythm of the work</h2>
+    <p class="lede">When the commits actually happened.</p>
+  </header>
+  <div class="panel reveal">
+     <div class="panel-head"><h3>Weekday and hour</h3><p>Local time of each commit's author.</p></div>
+     <div class="heatmap-wrap"><div id="heatmap" class="heatmap"></div></div>
+   </div>
+   <div class="panel reveal">
+     <div class="panel-head"><h3>Commits per week</h3><p>Every week between the first and last commit.</p></div>
+     <div class="chart" id="velocityChart"></div>
+   </div>
+</section>
+
+<section class="section" id="growth">
+  <header class="section-head reveal">
+    <p class="eyebrow">Growth</p>
+    <h2>How it grew</h2>
+    <p class="lede">Lines of code by language, accumulated week by week.</p>
+  </header>
+  <div class="panel reveal">
+     <div class="panel-head"><h3>Lines of code by language</h3><p>Accumulated from every diff, week by week.</p></div>
+     <div class="chart" id="growthChart"></div>
+     <div class="legend" id="growthLegend"></div>
+   </div>
+</section>
+
+<section class="section" id="hotspots">
+  <header class="section-head reveal">
+    <p class="eyebrow">Hotspots</p>
+    <h2>Where the heat is</h2>
+    <p class="lede">Size is code today. Colour is how often it changed.</p>
+  </header>
+  <div class="panel reveal">
+     <div class="panel-head">
+       <h3>Treemap of the tree today</h3>
+       <p>Click a directory to go in. <span class="crumbs" id="treemapCrumbs"></span></p>
+     </div>
+     <div class="treemap-wrap"><div class="treemap" id="treemap"></div></div>
+     <div class="churn-scale" id="churnScale"></div>
+   </div>
+</section>
+
+<section class="section" id="knowledge">
+  <header class="section-head reveal">
+    <p class="eyebrow">Knowledge</p>
+    <h2>Who knows what</h2>
+    <p class="lede">Ownership by directory, and how thin it is spread.</p>
+  </header>
+  <div class="stat-row reveal" id="busRow"></div>
+   <div class="panel reveal">
+     <div class="panel-head"><h3>Ownership by directory</h3><p>Share of lines changed, per top-level directory.</p></div>
+     <div id="ownership" class="ownership"></div>
+     <div class="legend" id="authorLegend"></div>
+   </div>
+</section>
+
+<section class="section" id="coupling">
+  <header class="section-head reveal">
+    <p class="eyebrow">Coupling</p>
+    <h2>What moves together</h2>
+    <p class="lede">Files that keep being edited in the same commit.</p>
+  </header>
+  <div class="panel reveal">
+     <div class="panel-head"><h3>Co-change graph</h3><p>The 30 strongest pairs. Drag a node.</p></div>
+     <div class="graph-wrap"><svg id="graph" class="graph"></svg></div>
+   </div>
+   <div class="panel reveal">
+     <div class="panel-head"><h3>The pairs</h3><p>Strength is co-changes over the commits of the rarer file.</p></div>
+     <div class="table-wrap"><table class="table" id="couplingTable"></table></div>
+   </div>
+</section>
+
+<section class="section" id="story">
+  <header class="section-head reveal">
+    <p class="eyebrow">Story</p>
+    <h2>The story</h2>
+    <p class="lede">The whole history, written out.</p>
+  </header>
+  <div class="story" id="story"></div>
+</section>
+
+  <footer class="footer">
+    <p>Generated by <strong>chronicle</strong> on Wed, 16 Sep 2026 22:37:14 GMT
+    from <code>/Users/neelbarmecha/LINKEDIN PROJECTS/chronicle</code> in 136 ms.</p>
+    <p class="footer-dim">Narration: built-in template engine.
+    Excludes 36 path pattern(s).</p>
+  </footer>
+</main>
+
+<div class="tooltip" id="tooltip" role="status" aria-live="polite"></div>
+
+<script type="application/json" id="chronicle-data">{"meta":{"repoName":"chronicle","repoPath":"/Users/neelbarmecha/LINKEDIN PROJECTS/chronicle","generatedAt":"2026-09-16T22:37:14.733Z","chronicleVersion":"0.1.0","tookMs":136,"narrator":"template","filters":{"exclude":["node_modules/**","**/node_modules/**","vendor/**","**/vendor/**","third_party/**","**/third_party/**","dist/**","**/dist/**","build/**","**/build/**","out/**",".next/**","target/**","Pods/**","package-lock.json","pnpm-lock.yaml","yarn.lock","bun.lockb","Cargo.lock","poetry.lock","composer.lock","Gemfile.lock","go.sum","*.lock","*.min.js","*.min.css","*.map","*.snap","*.pb.go","*_pb2.py","**/__snapshots__/**","**/.venv/**","**/venv/**","**/site-packages/**","**/coverage/**","**/.yarn/**"]}},"hero":{"commits":8,"mergeCommits":0,"authors":1,"firstTs":1789598222000,"lastTs":1789598223000,"loc":8178,"files":28,"activeDays":1,"spanDays":1,"longestStreak":{"days":1,"startTs":1789516800000,"endTs":1789516800000},"linesAdded":8178,"linesRemoved":0,"busFactor":1},"rhythm":{"heat":[[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],"maxHeat":8,"weeks":[{"t":1789344000000,"commits":8,"added":8178,"removed":0}]},"growth":{"languages":["HTML","TypeScript","JavaScript","CSS","Docs","Config","Other"],"series":[[1789344000000,3518,2326,1364,723,159,67,21]]},"hotspots":{"layouts":{"":[{"path":"src","name":"src","x":0,"y":0,"w":0.9115920763022745,"h":0.5281019450033534,"loc":3937,"churn":14,"heat":1,"isDir":true,"childCount":14},{"path":"examples","name":"examples","x":0,"y":0.5281019450033534,"w":0.9115920763022745,"h":0.4718980549966466,"loc":3518,"churn":2,"heat":1,"isDir":true,"childCount":2},{"path":"test","name":"test","x":0.9115920763022745,"y":0,"w":0.08840792369772554,"h":0.5726141078838178,"loc":414,"churn":4,"heat":1,"isDir":true,"childCount":4},{"path":"README.md","name":"README.md","x":0.9115920763022745,"y":0.5726141078838178,"w":0.08840792369772554,"h":0.21161825726141095,"loc":153,"churn":1,"heat":1,"isDir":false,"added":153,"removed":0,"topAuthor":"Neel Barmecha","language":"Docs"},{"path":"scripts","name":"scripts","x":0.9115920763022745,"y":0.7842323651452288,"w":0.08840792369772554,"h":0.08575380359612732,"loc":62,"churn":2,"heat":1,"isDir":true,"childCount":2},{"path":"package.json","name":"package.json","x":0.9115920763022745,"y":0.869986168741356,"w":0.08840792369772554,"h":0.052558782849239316,"loc":38,"churn":1,"heat":1,"isDir":false,"added":38,"removed":0,"topAuthor":"Neel Barmecha","language":"Config"},{"path":"tsconfig.json","name":"tsconfig.json","x":0.9115920763022745,"y":0.9225449515905954,"w":0.07104208154281584,"h":0.04130935915168245,"loc":24,"churn":1,"heat":1,"isDir":false,"added":24,"removed":0,"topAuthor":"Neel Barmecha","language":"Config"},{"path":"LICENSE","name":"LICENSE","x":0.9115920763022745,"y":0.9638543107422778,"w":0.07104208154281584,"h":0.03614568925772221,"loc":21,"churn":1,"heat":1,"isDir":false,"added":21,"removed":0,"topAuthor":"Neel Barmecha","language":"Other"},{"path":"docs","name":"docs","x":0.9826341578450903,"y":0.9225449515905954,"w":0.01736584215490966,"h":0.04224820822331363,"loc":6,"churn":1,"heat":1,"isDir":true,"childCount":1},{"path":".gitignore","name":".gitignore","x":0.9826341578450903,"y":0.964793159813909,"w":0.01736584215490966,"h":0.035206840186090965,"loc":5,"churn":1,"heat":1,"isDir":false,"added":5,"removed":0,"topAuthor":"Neel Barmecha","language":"Config"}],"src":[{"path":"src/client","name":"client","x":0,"y":0,"w":0.6002032004064007,"h":0.6817604739737622,"loc":1611,"churn":2,"heat":1,"isDir":true,"childCount":2},{"path":"src/analyze","name":"analyze","x":0,"y":0.6817604739737622,"w":0.6002032004064007,"h":0.31823952602623784,"loc":752,"churn":2,"heat":1,"isDir":true,"childCount":2},{"path":"src/git","name":"git","x":0.6002032004064007,"y":0,"w":0.39979679959359926,"h":0.2509529860228716,"loc":395,"churn":2,"heat":1,"isDir":true,"childCount":2},{"path":"src/narrate","name":"narrate","x":0.6002032004064007,"y":0.2509529860228716,"w":0.39979679959359926,"h":0.22617534942820833,"loc":356,"churn":2,"heat":1,"isDir":true,"childCount":2},{"path":"src/util","name":"util","x":0.6002032004064007,"y":0.4771283354510799,"w":0.2083053418443286,"h":0.2719186785260482,"loc":223,"churn":2,"heat":1,"isDir":true,"childCount":2},{"path":"src/types.ts","name":"types.ts","x":0.8085085422507293,"y":0.4771283354510799,"w":0.19149145774927068,"h":0.2719186785260482,"loc":205,"churn":1,"heat":1,"isDir":false,"added":205,"removed":0,"topAuthor":"Neel Barmecha","language":"TypeScript"},{"path":"src/report","name":"report","x":0.6002032004064007,"y":0.7490470139771281,"w":0.1781373081733504,"h":0.25095298602287186,"loc":176,"churn":1,"heat":1,"isDir":true,"childCount":1},{"path":"src/cli.ts","name":"cli.ts","x":0.7783405085797511,"y":0.7490470139771281,"w":0.22165949142024888,"h":0.1489675259496497,"loc":130,"churn":1,"heat":1,"isDir":false,"added":130,"removed":0,"topAuthor":"Neel Barmecha","language":"TypeScript"},{"path":"src/index.ts","name":"index.ts","x":0.7783405085797511,"y":0.8980145399267778,"w":0.22165949142024885,"h":0.10198546007322207,"loc":89,"churn":1,"heat":1,"isDir":false,"added":89,"removed":0,"topAuthor":"Neel Barmecha","language":"TypeScript"}],"src/client":[{"path":"src/client/app.js","name":"app.js","x":0,"y":0,"w":0.5512104283054003,"h":1,"loc":888,"churn":1,"heat":1,"isDir":false,"added":888,"removed":0,"topAuthor":"Neel Barmecha","language":"JavaScript"},{"path":"src/client/styles.css","name":"styles.css","x":0.5512104283054003,"y":0,"w":0.44878957169459965,"h":1,"loc":723,"churn":1,"heat":1,"isDir":false,"added":723,"removed":0,"topAuthor":"Neel Barmecha","language":"CSS"}],"src/analyze":[{"path":"src/analyze/aggregate.ts","name":"aggregate.ts","x":0,"y":0,"w":0.8164893617021276,"h":1,"loc":614,"churn":1,"heat":1,"isDir":false,"added":614,"removed":0,"topAuthor":"Neel Barmecha","language":"TypeScript"},{"path":"src/analyze/eras.ts","name":"eras.ts","x":0.8164893617021276,"y":0,"w":0.1835106382978724,"h":1,"loc":138,"churn":1,"heat":1,"isDir":false,"added":138,"removed":0,"topAuthor":"Neel Barmecha","language":"TypeScript"}],"src/git":[{"path":"src/git/parse.ts","name":"parse.ts","x":0,"y":0,"w":0.5367088607594936,"h":1,"loc":212,"churn":1,"heat":1,"isDir":false,"added":212,"removed":0,"topAuthor":"Neel Barmecha","language":"TypeScript"},{"path":"src/git/run.ts","name":"run.ts","x":0.5367088607594936,"y":0,"w":0.46329113924050636,"h":1,"loc":183,"churn":1,"heat":1,"isDir":false,"added":183,"removed":0,"topAuthor":"Neel Barmecha","language":"TypeScript"}],"src/narrate":[{"path":"src/narrate/template.ts","name":"template.ts","x":0,"y":0,"w":0.5674157303370786,"h":1,"loc":202,"churn":1,"heat":1,"isDir":false,"added":202,"removed":0,"topAuthor":"Neel Barmecha","language":"TypeScript"},{"path":"src/narrate/claude.ts","name":"claude.ts","x":0.5674157303370786,"y":0,"w":0.4325842696629214,"h":1,"loc":154,"churn":1,"heat":1,"isDir":false,"added":154,"removed":0,"topAuthor":"Neel Barmecha","language":"TypeScript"}],"src/util":[{"path":"src/util/glob.ts","name":"glob.ts","x":0,"y":0,"w":0.5515695067264574,"h":1,"loc":123,"churn":1,"heat":1,"isDir":false,"added":123,"removed":0,"topAuthor":"Neel Barmecha","language":"TypeScript"},{"path":"src/util/lang.ts","name":"lang.ts","x":0.5515695067264574,"y":0,"w":0.44843049327354256,"h":1,"loc":100,"churn":1,"heat":1,"isDir":false,"added":100,"removed":0,"topAuthor":"Neel Barmecha","language":"TypeScript"}],"src/report":[{"path":"src/report/render.ts","name":"render.ts","x":0,"y":0,"w":1,"h":1,"loc":176,"churn":1,"heat":1,"isDir":false,"added":176,"removed":0,"topAuthor":"Neel Barmecha","language":"TypeScript"}],"examples":[{"path":"examples/chronicle.html","name":"chronicle.html","x":0,"y":0,"w":1,"h":0.5,"loc":1759,"churn":1,"heat":1,"isDir":false,"added":1759,"removed":0,"topAuthor":"Neel Barmecha","language":"HTML"},{"path":"examples/mixpilot.html","name":"mixpilot.html","x":0,"y":0.5,"w":1,"h":0.5,"loc":1759,"churn":1,"heat":1,"isDir":false,"added":1759,"removed":0,"topAuthor":"Neel Barmecha","language":"HTML"}],"test":[{"path":"test/treemap.test.js","name":"treemap.test.js","x":0,"y":0,"w":0.5845410628019323,"h":0.5082644628099174,"loc":123,"churn":1,"heat":1,"isDir":false,"added":123,"removed":0,"topAuthor":"Neel Barmecha","language":"JavaScript"},{"path":"test/parse.test.js","name":"parse.test.js","x":0,"y":0.5082644628099174,"w":0.5845410628019323,"h":0.49173553719008256,"loc":119,"churn":1,"heat":1,"isDir":false,"added":119,"removed":0,"topAuthor":"Neel Barmecha","language":"JavaScript"},{"path":"test/coupling.test.js","name":"coupling.test.js","x":0.5845410628019323,"y":0,"w":0.4154589371980677,"h":0.5348837209302324,"loc":92,"churn":1,"heat":1,"isDir":false,"added":92,"removed":0,"topAuthor":"Neel Barmecha","language":"JavaScript"},{"path":"test/eras.test.js","name":"eras.test.js","x":0.5845410628019323,"y":0.5348837209302324,"w":0.4154589371980677,"h":0.4651162790697676,"loc":80,"churn":1,"heat":1,"isDir":false,"added":80,"removed":0,"topAuthor":"Neel Barmecha","language":"JavaScript"}],"scripts":[{"path":"scripts/demo.mjs","name":"demo.mjs","x":0,"y":0,"w":0.7096774193548387,"h":1,"loc":44,"churn":1,"heat":1,"isDir":false,"added":44,"removed":0,"topAuthor":"Neel Barmecha","language":"JavaScript"},{"path":"scripts/copy-assets.mjs","name":"copy-assets.mjs","x":0.7096774193548387,"y":0,"w":0.29032258064516125,"h":1,"loc":18,"churn":1,"heat":1,"isDir":false,"added":18,"removed":0,"topAuthor":"Neel Barmecha","language":"JavaScript"}],"docs":[{"path":"docs/README.md","name":"README.md","x":0,"y":0,"w":1,"h":1,"loc":6,"churn":1,"heat":1,"isDir":false,"added":6,"removed":0,"topAuthor":"Neel Barmecha","language":"Docs"}]},"maxChurn":1,"totalLoc":8178},"knowledge":{"busFactor":1,"authors":[{"name":"Neel Barmecha","commits":8,"added":8178,"removed":0,"firstTs":1789598222000,"lastTs":1789598223000,"color":"hsl(200.0 62% 64%)"}],"dirs":[{"name":"src","lines":3937,"shares":[{"author":"Neel Barmecha","lines":3937}],"busFactor":1},{"name":"examples","lines":3518,"shares":[{"author":"Neel Barmecha","lines":3518}],"busFactor":1},{"name":"test","lines":414,"shares":[{"author":"Neel Barmecha","lines":414}],"busFactor":1},{"name":"(root)","lines":241,"shares":[{"author":"Neel Barmecha","lines":241}],"busFactor":1},{"name":"scripts","lines":62,"shares":[{"author":"Neel Barmecha","lines":62}],"busFactor":1},{"name":"docs","lines":6,"shares":[{"author":"Neel Barmecha","lines":6}],"busFactor":1}]},"coupling":{"pairs":[{"a":".gitignore","b":"LICENSE","count":1,"strength":1},{"a":".gitignore","b":"package.json","count":1,"strength":1},{"a":".gitignore","b":"scripts/copy-assets.mjs","count":1,"strength":1},{"a":".gitignore","b":"tsconfig.json","count":1,"strength":1},{"a":"LICENSE","b":"package.json","count":1,"strength":1},{"a":"LICENSE","b":"scripts/copy-assets.mjs","count":1,"strength":1},{"a":"LICENSE","b":"tsconfig.json","count":1,"strength":1},{"a":"README.md","b":"docs/README.md","count":1,"strength":1},{"a":"README.md","b":"examples/chronicle.html","count":1,"strength":1},{"a":"README.md","b":"examples/mixpilot.html","count":1,"strength":1},{"a":"docs/README.md","b":"examples/chronicle.html","count":1,"strength":1},{"a":"docs/README.md","b":"examples/mixpilot.html","count":1,"strength":1},{"a":"examples/chronicle.html","b":"examples/mixpilot.html","count":1,"strength":1},{"a":"package.json","b":"scripts/copy-assets.mjs","count":1,"strength":1},{"a":"package.json","b":"tsconfig.json","count":1,"strength":1},{"a":"scripts/copy-assets.mjs","b":"tsconfig.json","count":1,"strength":1},{"a":"scripts/demo.mjs","b":"src/cli.ts","count":1,"strength":1},{"a":"scripts/demo.mjs","b":"src/index.ts","count":1,"strength":1},{"a":"scripts/demo.mjs","b":"src/narrate/claude.ts","count":1,"strength":1},{"a":"scripts/demo.mjs","b":"src/narrate/template.ts","count":1,"strength":1},{"a":"src/analyze/aggregate.ts","b":"src/analyze/eras.ts","count":1,"strength":1},{"a":"src/cli.ts","b":"src/index.ts","count":1,"strength":1},{"a":"src/cli.ts","b":"src/narrate/claude.ts","count":1,"strength":1},{"a":"src/cli.ts","b":"src/narrate/template.ts","count":1,"strength":1},{"a":"src/client/app.js","b":"src/client/styles.css","count":1,"strength":1},{"a":"src/client/app.js","b":"src/report/render.ts","count":1,"strength":1},{"a":"src/client/styles.css","b":"src/report/render.ts","count":1,"strength":1},{"a":"src/git/parse.ts","b":"src/git/run.ts","count":1,"strength":1},{"a":"src/index.ts","b":"src/narrate/claude.ts","count":1,"strength":1},{"a":"src/index.ts","b":"src/narrate/template.ts","count":1,"strength":1}],"nodes":[{"id":".gitignore","label":".gitignore","dir":"(root)","degree":4,"weight":1},{"id":"LICENSE","label":"LICENSE","dir":"(root)","degree":4,"weight":1},{"id":"package.json","label":"package.json","dir":"(root)","degree":4,"weight":1},{"id":"scripts/copy-assets.mjs","label":"copy-assets.mjs","dir":"scripts","degree":4,"weight":1},{"id":"tsconfig.json","label":"tsconfig.json","dir":"(root)","degree":4,"weight":1},{"id":"README.md","label":"README.md","dir":"(root)","degree":3,"weight":1},{"id":"docs/README.md","label":"README.md","dir":"docs","degree":3,"weight":1},{"id":"examples/chronicle.html","label":"chronicle.html","dir":"examples","degree":3,"weight":1},{"id":"examples/mixpilot.html","label":"mixpilot.html","dir":"examples","degree":3,"weight":1},{"id":"scripts/demo.mjs","label":"demo.mjs","dir":"scripts","degree":4,"weight":1},{"id":"src/cli.ts","label":"cli.ts","dir":"src","degree":4,"weight":1},{"id":"src/index.ts","label":"index.ts","dir":"src","degree":4,"weight":1},{"id":"src/narrate/claude.ts","label":"claude.ts","dir":"src","degree":3,"weight":1},{"id":"src/narrate/template.ts","label":"template.ts","dir":"src","degree":3,"weight":1},{"id":"src/analyze/aggregate.ts","label":"aggregate.ts","dir":"src","degree":1,"weight":1},{"id":"src/analyze/eras.ts","label":"eras.ts","dir":"src","degree":1,"weight":1},{"id":"src/client/app.js","label":"app.js","dir":"src","degree":2,"weight":1},{"id":"src/client/styles.css","label":"styles.css","dir":"src","degree":2,"weight":1},{"id":"src/report/render.ts","label":"render.ts","dir":"src","degree":2,"weight":1},{"id":"src/git/parse.ts","label":"parse.ts","dir":"src","degree":1,"weight":1},{"id":"src/git/run.ts","label":"run.ts","dir":"src","degree":1,"weight":1}],"edges":[{"source":0,"target":1,"count":1,"strength":1},{"source":0,"target":2,"count":1,"strength":1},{"source":0,"target":3,"count":1,"strength":1},{"source":0,"target":4,"count":1,"strength":1},{"source":1,"target":2,"count":1,"strength":1},{"source":1,"target":3,"count":1,"strength":1},{"source":1,"target":4,"count":1,"strength":1},{"source":5,"target":6,"count":1,"strength":1},{"source":5,"target":7,"count":1,"strength":1},{"source":5,"target":8,"count":1,"strength":1},{"source":6,"target":7,"count":1,"strength":1},{"source":6,"target":8,"count":1,"strength":1},{"source":7,"target":8,"count":1,"strength":1},{"source":2,"target":3,"count":1,"strength":1},{"source":2,"target":4,"count":1,"strength":1},{"source":3,"target":4,"count":1,"strength":1},{"source":9,"target":10,"count":1,"strength":1},{"source":9,"target":11,"count":1,"strength":1},{"source":9,"target":12,"count":1,"strength":1},{"source":9,"target":13,"count":1,"strength":1},{"source":14,"target":15,"count":1,"strength":1},{"source":10,"target":11,"count":1,"strength":1},{"source":10,"target":12,"count":1,"strength":1},{"source":10,"target":13,"count":1,"strength":1},{"source":16,"target":17,"count":1,"strength":1},{"source":16,"target":18,"count":1,"strength":1},{"source":17,"target":18,"count":1,"strength":1},{"source":19,"target":20,"count":1,"strength":1},{"source":11,"target":12,"count":1,"strength":1},{"source":11,"target":13,"count":1,"strength":1}]},"eras":[{"index":0,"startTs":1789598222000,"endTs":1789598222000,"commits":3,"added":2934,"removed":0,"authors":[{"name":"Neel Barmecha","commits":3}],"dirs":[{"name":"src/analyze","commits":1},{"name":"src/client","commits":1},{"name":"src/git","commits":1},{"name":"src/report","commits":1}],"files":[{"path":"src/analyze/aggregate.ts","commits":1},{"path":"src/analyze/coupling.ts","commits":1},{"path":"src/analyze/eras.ts","commits":1},{"path":"src/analyze/treemap.ts","commits":1},{"path":"src/client/app.js","commits":1},{"path":"src/client/styles.css","commits":1}],"languages":[{"name":"TypeScript","lines":1323},{"name":"JavaScript","lines":888},{"name":"CSS","lines":723}],"label":"Genesis","narrative":"From Sep 16, 2026 to Sep 16, 2026, 1 day of work produced 3 commits from 1 contributor. The busiest week of the period carried 3 commits, and 2,934 lines were added while 0 came out. Attention sat on `src/analyze`, `src/client` and `src/git`, with `src/analyze` touched in roughly 33% of the chapter's commits. The centre of gravity was `src/analyze/aggregate.ts` (1 edit) and `src/analyze/coupling.ts` (1 edit). Neel Barmecha carried the whole chapter. Most of the new ground was broken in TypeScript and JavaScript.","peakWeekCommits":3,"commitsPerWeek":3},{"index":1,"startTs":1789598222000,"endTs":1789598222000,"commits":2,"added":534,"removed":0,"authors":[{"name":"Neel Barmecha","commits":2}],"dirs":[{"name":"(root)","commits":1},{"name":"scripts","commits":1},{"name":"src","commits":1},{"name":"src/util","commits":1}],"files":[{"path":".gitignore","commits":1},{"path":"LICENSE","commits":1},{"path":"package.json","commits":1},{"path":"scripts/copy-assets.mjs","commits":1},{"path":"src/types.ts","commits":1},{"path":"src/util/glob.ts","commits":1}],"languages":[{"name":"TypeScript","lines":428},{"name":"Config","lines":67},{"name":"Other","lines":21},{"name":"JavaScript","lines":18}],"label":"Into the root","narrative":"Between Sep 16, 2026 and Sep 16, 2026, 1 day of work produced 2 commits from 1 contributor. 534 lines went in and 0 came out. Attention sat on the repository root, `scripts` and `src`, with the repository root touched in roughly 50% of the chapter's commits. The centre of gravity was `.gitignore` (1 edit) and `LICENSE` (1 edit). Neel Barmecha carried the whole chapter. Most of the new ground was broken in TypeScript and Config.","peakWeekCommits":2,"commitsPerWeek":2},{"index":2,"startTs":1789598223000,"endTs":1789598223000,"commits":3,"added":4710,"removed":0,"authors":[{"name":"Neel Barmecha","commits":3}],"dirs":[{"name":"(root)","commits":1},{"name":"docs","commits":1},{"name":"examples","commits":1},{"name":"scripts","commits":1},{"name":"src","commits":1},{"name":"src/narrate","commits":1}],"files":[{"path":"docs/README.md","commits":1},{"path":"examples/chronicle.html","commits":1},{"path":"examples/mixpilot.html","commits":1},{"path":"README.md","commits":1},{"path":"scripts/demo.mjs","commits":1},{"path":"src/cli.ts","commits":1}],"languages":[{"name":"HTML","lines":3518},{"name":"TypeScript","lines":575},{"name":"JavaScript","lines":458},{"name":"Docs","lines":159}],"label":"Where it stands","narrative":"Across Sep 16, 2026 to Sep 16, 2026, 1 day of work produced 3 commits from 1 contributor. 4,710 lines went in and 0 came out. Attention sat on the repository root, `docs` and `examples`, with the repository root touched in roughly 33% of the chapter's commits. The centre of gravity was `docs/README.md` (1 edit) and `examples/chronicle.html` (1 edit). Neel Barmecha carried the whole chapter. The code that survives from here is mostly HTML and TypeScript.","peakWeekCommits":3,"commitsPerWeek":3}],"authors":[{"name":"Neel Barmecha","commits":8,"added":8178,"removed":0,"firstTs":1789598222000,"lastTs":1789598223000,"color":"hsl(200.0 62% 64%)"}],"topFiles":[{"path":"examples/chronicle.html","commits":1,"added":1759,"removed":0,"firstTs":1789598223000,"lastTs":1789598223000,"topAuthor":"Neel Barmecha","loc":1759,"language":"HTML"},{"path":"examples/mixpilot.html","commits":1,"added":1759,"removed":0,"firstTs":1789598223000,"lastTs":1789598223000,"topAuthor":"Neel Barmecha","loc":1759,"language":"HTML"},{"path":"src/client/app.js","commits":1,"added":888,"removed":0,"firstTs":1789598222000,"lastTs":1789598222000,"topAuthor":"Neel Barmecha","loc":888,"language":"JavaScript"},{"path":"src/client/styles.css","commits":1,"added":723,"removed":0,"firstTs":1789598222000,"lastTs":1789598222000,"topAuthor":"Neel Barmecha","loc":723,"language":"CSS"},{"path":"src/analyze/aggregate.ts","commits":1,"added":614,"removed":0,"firstTs":1789598222000,"lastTs":1789598222000,"topAuthor":"Neel Barmecha","loc":614,"language":"TypeScript"},{"path":"src/git/parse.ts","commits":1,"added":212,"removed":0,"firstTs":1789598222000,"lastTs":1789598222000,"topAuthor":"Neel Barmecha","loc":212,"language":"TypeScript"},{"path":"src/types.ts","commits":1,"added":205,"removed":0,"firstTs":1789598222000,"lastTs":1789598222000,"topAuthor":"Neel Barmecha","loc":205,"language":"TypeScript"},{"path":"src/narrate/template.ts","commits":1,"added":202,"removed":0,"firstTs":1789598223000,"lastTs":1789598223000,"topAuthor":"Neel Barmecha","loc":202,"language":"TypeScript"},{"path":"src/git/run.ts","commits":1,"added":183,"removed":0,"firstTs":1789598222000,"lastTs":1789598222000,"topAuthor":"Neel Barmecha","loc":183,"language":"TypeScript"},{"path":"src/report/render.ts","commits":1,"added":176,"removed":0,"firstTs":1789598222000,"lastTs":1789598222000,"topAuthor":"Neel Barmecha","loc":176,"language":"TypeScript"},{"path":"src/narrate/claude.ts","commits":1,"added":154,"removed":0,"firstTs":1789598223000,"lastTs":1789598223000,"topAuthor":"Neel Barmecha","loc":154,"language":"TypeScript"},{"path":"README.md","commits":1,"added":153,"removed":0,"firstTs":1789598223000,"lastTs":1789598223000,"topAuthor":"Neel Barmecha","loc":153,"language":"Docs"},{"path":"src/analyze/eras.ts","commits":1,"added":138,"removed":0,"firstTs":1789598222000,"lastTs":1789598222000,"topAuthor":"Neel Barmecha","loc":138,"language":"TypeScript"},{"path":"src/cli.ts","commits":1,"added":130,"removed":0,"firstTs":1789598223000,"lastTs":1789598223000,"topAuthor":"Neel Barmecha","loc":130,"language":"TypeScript"},{"path":"test/treemap.test.js","commits":1,"added":123,"removed":0,"firstTs":1789598223000,"lastTs":1789598223000,"topAuthor":"Neel Barmecha","loc":123,"language":"JavaScript"},{"path":"src/util/glob.ts","commits":1,"added":123,"removed":0,"firstTs":1789598222000,"lastTs":1789598222000,"topAuthor":"Neel Barmecha","loc":123,"language":"TypeScript"},{"path":"test/parse.test.js","commits":1,"added":119,"removed":0,"firstTs":1789598223000,"lastTs":1789598223000,"topAuthor":"Neel Barmecha","loc":119,"language":"JavaScript"},{"path":"src/util/lang.ts","commits":1,"added":100,"removed":0,"firstTs":1789598222000,"lastTs":1789598222000,"topAuthor":"Neel Barmecha","loc":100,"language":"TypeScript"},{"path":"test/coupling.test.js","commits":1,"added":92,"removed":0,"firstTs":1789598223000,"lastTs":1789598223000,"topAuthor":"Neel Barmecha","loc":92,"language":"JavaScript"},{"path":"src/index.ts","commits":1,"added":89,"removed":0,"firstTs":1789598223000,"lastTs":1789598223000,"topAuthor":"Neel Barmecha","loc":89,"language":"TypeScript"},{"path":"test/eras.test.js","commits":1,"added":80,"removed":0,"firstTs":1789598223000,"lastTs":1789598223000,"topAuthor":"Neel Barmecha","loc":80,"language":"JavaScript"},{"path":"scripts/demo.mjs","commits":1,"added":44,"removed":0,"firstTs":1789598223000,"lastTs":1789598223000,"topAuthor":"Neel Barmecha","loc":44,"language":"JavaScript"},{"path":"package.json","commits":1,"added":38,"removed":0,"firstTs":1789598222000,"lastTs":1789598222000,"topAuthor":"Neel Barmecha","loc":38,"language":"Config"},{"path":"tsconfig.json","commits":1,"added":24,"removed":0,"firstTs":1789598222000,"lastTs":1789598222000,"topAuthor":"Neel Barmecha","loc":24,"language":"Config"},{"path":"LICENSE","commits":1,"added":21,"removed":0,"firstTs":1789598222000,"lastTs":1789598222000,"topAuthor":"Neel Barmecha","loc":21,"language":"Other"},{"path":"scripts/copy-assets.mjs","commits":1,"added":18,"removed":0,"firstTs":1789598222000,"lastTs":1789598222000,"topAuthor":"Neel Barmecha","loc":18,"language":"JavaScript"},{"path":"docs/README.md","commits":1,"added":6,"removed":0,"firstTs":1789598223000,"lastTs":1789598223000,"topAuthor":"Neel Barmecha","loc":6,"language":"Docs"},{"path":".gitignore","commits":1,"added":5,"removed":0,"firstTs":1789598222000,"lastTs":1789598222000,"topAuthor":"Neel Barmecha","loc":5,"language":"Config"},{"path":"src/analyze/coupling.ts","commits":1,"added":0,"removed":0,"firstTs":1789598222000,"lastTs":1789598222000,"topAuthor":"Neel Barmecha","loc":0,"language":"TypeScript"},{"path":"src/analyze/treemap.ts","commits":1,"added":0,"removed":0,"firstTs":1789598222000,"lastTs":1789598222000,"topAuthor":"Neel Barmecha","loc":0,"language":"TypeScript"}],"summary":"chronicle has been under development for 1 day, starting September 2026 and last touched Sep 16, 2026. 8 commits from 1 author moved 8,178 lines in and out of the tree, leaving 8,178 lines across 28 tracked files today. Work landed on 1 day at about 8.0 commits a week, with a longest unbroken run of 1 day. Every commit here belongs to Neel Barmecha, so the bus factor is 1. The single most-edited file is `examples/chronicle.html` with 1 commit against it. Chronicle reads this history as 3 distinct eras, detected from shifts in commit velocity and in which directories the work was happening."}</script>
+<script>
+/* chronicle — report runtime.
+   Vanilla JS, no dependencies, no network. Everything here draws from the JSON
+   blob embedded above by the CLI. */
+(function () {
+  'use strict';
+
+  var DATA = JSON.parse(document.getElementById('chronicle-data').textContent);
+  var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var SVGNS = 'http://www.w3.org/2000/svg';
+
+  /* ------------------------------------------------------------------ utils */
+  function $(id) { return document.getElementById(id); }
+  function el(tag, cls, text) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  }
+  function svg(tag, attrs) {
+    var n = document.createElementNS(SVGNS, tag);
+    if (attrs) for (var k in attrs) n.setAttribute(k, attrs[k]);
+    return n;
+  }
+  function num(n) {
+    if (n == null || !isFinite(n)) return '0';
+    return Math.round(n).toLocaleString('en-US');
+  }
+  function compact(n) {
+    if (n == null || !isFinite(n)) return '0';
+    var a = Math.abs(n);
+    if (a >= 1e9) return (n / 1e9).toFixed(1).replace(/\.0$/, '') + 'B';
+    if (a >= 1e6) return (n / 1e6).toFixed(1).replace(/\.0$/, '') + 'M';
+    if (a >= 1e4) return (n / 1e3).toFixed(0) + 'k';
+    return num(n);
+  }
+  var MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  function fmtDate(ts) {
+    if (!ts) return '—';
+    var d = new Date(ts);
+    return MONTHS[d.getUTCMonth()] + ' ' + d.getUTCDate() + ', ' + d.getUTCFullYear();
+  }
+  function fmtShort(ts) {
+    var d = new Date(ts);
+    return MONTHS[d.getUTCMonth()] + " '" + String(d.getUTCFullYear()).slice(2);
+  }
+  function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
+  function mix(c1, c2, t) {
+    t = clamp(t, 0, 1);
+    return 'rgb(' + Math.round(c1[0] + (c2[0] - c1[0]) * t) + ',' +
+      Math.round(c1[1] + (c2[1] - c1[1]) * t) + ',' +
+      Math.round(c1[2] + (c2[2] - c1[2]) * t) + ')';
+  }
+  /* Inline-markdown for narratives: `code` only, everything else escaped. */
+  function richText(node, text) {
+    node.textContent = '';
+    var parts = String(text == null ? '' : text).split('`');
+    for (var i = 0; i < parts.length; i++) {
+      if (i % 2 === 1 && parts[i]) node.appendChild(el('code', null, parts[i]));
+      else if (parts[i]) node.appendChild(document.createTextNode(parts[i]));
+    }
+  }
+
+  var COOL = [43, 53, 80], MID = [91, 140, 255], HOT = [255, 84, 112];
+  function churnColor(t) {
+    return t < 0.5 ? mix(COOL, MID, t * 2) : mix(MID, HOT, (t - 0.5) * 2);
+  }
+  var HEAT0 = [18, 22, 34], HEAT1 = [56, 96, 200], HEAT2 = [124, 214, 255];
+  function heatColor(t) {
+    return t < 0.6 ? mix(HEAT0, HEAT1, t / 0.6) : mix(HEAT1, HEAT2, (t - 0.6) / 0.4);
+  }
+
+  var LANG_COLORS = {
+    TypeScript: '#4f8cff', JavaScript: '#f0c14b', Python: '#3fb27f', Go: '#4fd1e0', Rust: '#f2803c',
+    Java: '#e3703a', Kotlin: '#9b6bff', Swift: '#ff6b5e', 'C++': '#7b8cff', C: '#8d99b4', 'C#': '#6fbf73',
+    Ruby: '#e14f5e', PHP: '#7a7fd1', HTML: '#ff7a59', CSS: '#4fb4ff', Vue: '#41b883', Svelte: '#ff5a3c',
+    Shell: '#9ad14b', SQL: '#d68fff', Config: '#6b7690', Docs: '#b7c0d4', Markup: '#8fa2c8',
+    Docker: '#3d8fe0', Terraform: '#a56bff', Build: '#c0a06a', Data: '#59c2a6', Notebook: '#f08c3a',
+    Other: '#5a6478'
+  };
+  function langColor(name) {
+    if (LANG_COLORS[name]) return LANG_COLORS[name];
+    var h = 0;
+    for (var i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) | 0;
+    return 'hsl(' + (Math.abs(h) % 360) + ' 62% 58%)';
+  }
+
+  var ERA_COLORS = ['#5b8cff', '#9d6bff', '#37d0c0', '#ff8a4c', '#ff5470', '#4fb4ff', '#9ad14b', '#d68fff'];
+  function eraColor(i) { return ERA_COLORS[i % ERA_COLORS.length]; }
+
+  var authorColorMap = {};
+  (DATA.authors || []).forEach(function (a) { authorColorMap[a.name] = a.color; });
+  function authorColor(name) { return authorColorMap[name] || '#7c879e'; }
+
+  /* --------------------------------------------------------------- tooltip */
+  var tipEl = $('tooltip');
+  var tipRaf = null, tipX = 0, tipY = 0;
+  function tipMove(ev) {
+    tipX = ev.clientX; tipY = ev.clientY;
+    if (tipRaf) return;
+    tipRaf = requestAnimationFrame(function () {
+      tipRaf = null;
+      var w = tipEl.offsetWidth, h = tipEl.offsetHeight;
+      var x = tipX + 16, y = tipY + 16;
+      if (x + w > window.innerWidth - 12) x = tipX - w - 16;
+      if (y + h > window.innerHeight - 12) y = tipY - h - 16;
+      tipEl.style.transform = 'translate3d(' + Math.max(8, x) + 'px,' + Math.max(8, y) + 'px,0) scale(1)';
+    });
+  }
+  function tipShow(html, ev) {
+    tipEl.innerHTML = html;
+    tipEl.classList.add('show');
+    tipMove(ev);
+  }
+  function tipHide() { tipEl.classList.remove('show'); }
+  function ttRow(k, v) {
+    return '<div class="tt-row"><span>' + k + '</span><span>' + v + '</span></div>';
+  }
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+      return c === '&' ? '&amp;' : c === '<' ? '&lt;' : c === '>' ? '&gt;' : '&quot;';
+    });
+  }
+  function bindTip(node, builder) {
+    node.addEventListener('mouseenter', function (e) { tipShow(builder(), e); });
+    node.addEventListener('mousemove', tipMove);
+    node.addEventListener('mouseleave', tipHide);
+  }
+
+  /* --------------------------------------------------------------- reveals */
+  var onVisible = [];
+  var revealObserver = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (!entry.isIntersecting) return;
+      entry.target.classList.add('in');
+      revealObserver.unobserve(entry.target);
+      var fn = entry.target.__onIn;
+      if (fn) { entry.target.__onIn = null; fn(); }
+    });
+  }, { rootMargin: '0px 0px -8% 0px', threshold: 0.08 });
+
+  function observe(node, fn) {
+    if (fn) node.__onIn = fn;
+    if (REDUCED) {
+      node.classList.add('in');
+      if (fn) { node.__onIn = null; fn(); }
+      return;
+    }
+    revealObserver.observe(node);
+  }
+  function revealAll() {
+    Array.prototype.forEach.call(document.querySelectorAll('.reveal'), function (n) {
+      if (!n.classList.contains('in')) observe(n, n.__onIn || null);
+    });
+    onVisible.forEach(function (f) { f(); });
+  }
+
+  /* -------------------------------------------------------------- nav/chrome */
+  (function nav() {
+    var topnav = $('topnav'), bar = $('progressBar');
+    var links = Array.prototype.slice.call(document.querySelectorAll('.nav-link'));
+    var sections = links.map(function (l) { return $(l.getAttribute('data-nav')); });
+    var ticking = false;
+    function update() {
+      ticking = false;
+      var y = window.scrollY || window.pageYOffset;
+      var max = Math.max(1, document.body.scrollHeight - window.innerHeight);
+      bar.style.width = clamp((y / max) * 100, 0, 100).toFixed(2) + '%';
+      topnav.classList.toggle('visible', y > window.innerHeight * 0.55);
+      var active = -1;
+      for (var i = 0; i < sections.length; i++) {
+        if (sections[i] && sections[i].getBoundingClientRect().top <= window.innerHeight * 0.4) active = i;
+      }
+      links.forEach(function (l, i) { l.classList.toggle('active', i === active); });
+    }
+    window.addEventListener('scroll', function () {
+      if (!ticking) { ticking = true; requestAnimationFrame(update); }
+    }, { passive: true });
+    update();
+  })();
+
+  /* ------------------------------------------------------------------- hero */
+  (function hero() {
+    var h = DATA.hero;
+    $('heroDates').textContent = fmtDate(h.firstTs) + '  —  ' + fmtDate(h.lastTs);
+    richText($('heroSummary'), DATA.summary);
+
+    var stats = [
+      { v: h.commits, label: 'commits' },
+      { v: h.authors, label: h.authors === 1 ? 'author' : 'authors' },
+      { v: h.loc, label: 'lines today', compact: true },
+      { v: h.files, label: 'files' },
+      { v: h.activeDays, label: 'active days' },
+      { v: h.longestStreak.days, label: 'day streak' },
+      { v: h.linesAdded + h.linesRemoved, label: 'lines churned', compact: true },
+      { v: h.busFactor, label: 'bus factor' }
+    ];
+    var wrap = $('heroStats');
+    stats.forEach(function (s, i) {
+      var card = el('div', 'stat');
+      var b = el('b', null, '0');
+      card.appendChild(b);
+      card.appendChild(el('span', null, s.label));
+      wrap.appendChild(card);
+      var target = s.v || 0;
+      var render = function (v) { b.textContent = s.compact ? compact(v) : num(v); };
+      if (REDUCED) { card.classList.add('in'); render(target); return; }
+      setTimeout(function () {
+        card.classList.add('in');
+        var t0 = performance.now(), dur = 1100 + i * 40;
+        (function step(now) {
+          var p = clamp((now - t0) / dur, 0, 1);
+          var e = 1 - Math.pow(1 - p, 4);
+          render(target * e);
+          if (p < 1) requestAnimationFrame(step);
+          else render(target);
+        })(t0);
+      }, 260 + i * 70);
+    });
+  })();
+
+  /* ------------------------------------------------------------------- eras */
+  (function eras() {
+    var list = DATA.eras || [];
+    var band = $('eraBand'), cards = $('eraCards'), story = $('story');
+    if (!list.length) {
+      band.style.display = 'none';
+      return;
+    }
+    var t0 = list[0].startTs, t1 = list[list.length - 1].endTs;
+    var span = Math.max(1, t1 - t0);
+
+    list.forEach(function (era, i) {
+      var pct = Math.max(6, ((era.endTs - era.startTs) / span) * 100);
+      var seg = el('div', 'era-seg');
+      seg.style.flexBasis = '0%';
+      seg.style.flexGrow = '0';
+      var fill = el('i');
+      fill.style.background = 'linear-gradient(160deg,' + eraColor(i) + ' 0%, rgba(10,12,18,0.55) 150%)';
+      seg.appendChild(fill);
+      seg.appendChild(el('em', null, era.label || 'Era ' + (i + 1)));
+      var u = el('u', null, fmtShort(era.startTs) + ' – ' + fmtShort(era.endTs) + ' · ' + num(era.commits) + ' commits');
+      seg.appendChild(u);
+      bindTip(seg, function () {
+        return '<span class="tt-title">' + esc(era.label) + '</span>' +
+          ttRow('Range', fmtDate(era.startTs) + ' – ' + fmtDate(era.endTs)) +
+          ttRow('Commits', num(era.commits) + ' (' + era.commitsPerWeek + '/wk)') +
+          ttRow('Lines', '+' + compact(era.added) + ' / -' + compact(era.removed)) +
+          ttRow('Top directory', esc(era.dirs[0] ? era.dirs[0].name : '—'));
+      });
+      seg.addEventListener('click', function () {
+        var target = document.getElementById('story-era-' + i);
+        if (target) target.scrollIntoView({ behavior: REDUCED ? 'auto' : 'smooth', block: 'center' });
+      });
+      band.appendChild(seg);
+      setTimeout(function () { seg.style.flexBasis = pct + '%'; }, REDUCED ? 0 : 160 + i * 90);
+
+      /* card */
+      var card = el('div', 'era-card reveal');
+      var rule = el('div', 'era-rule');
+      rule.style.background = 'linear-gradient(90deg,' + eraColor(i) + ', rgba(255,255,255,0.08))';
+      card.appendChild(rule);
+      card.appendChild(el('h4', null, era.label || 'Era ' + (i + 1)));
+      card.appendChild(el('p', 'era-range', fmtDate(era.startTs) + ' – ' + fmtDate(era.endTs)));
+      var dl = el('dl');
+      function row(k, v) { dl.appendChild(el('dt', null, k)); dl.appendChild(el('dd', null, v)); }
+      row('Commits', num(era.commits) + '  ·  ' + era.commitsPerWeek + '/week');
+      row('Lines', '+' + num(era.added) + ' / -' + num(era.removed));
+      row('People', era.authors.slice(0, 3).map(function (a) { return a.name; }).join(', ') || '—');
+      row('Focus', era.dirs.slice(0, 3).map(function (d) { return d.name; }).join(', ') || '—');
+      row('Hot file', era.files[0] ? era.files[0].path : '—');
+      card.appendChild(dl);
+      cards.appendChild(card);
+      observe(card);
+
+      /* story block */
+      var block = el('div', 'story-era reveal');
+      block.id = 'story-era-' + i;
+      var srule = el('div', 'story-rule');
+      srule.style.background = eraColor(i);
+      block.appendChild(srule);
+      block.appendChild(el('h4', null, era.label || 'Era ' + (i + 1)));
+      block.appendChild(el('p', 'era-range', fmtDate(era.startTs) + ' – ' + fmtDate(era.endTs) +
+        '  ·  ' + num(era.commits) + ' commits  ·  ' + era.authors.length +
+        (era.authors.length === 1 ? ' contributor' : ' contributors')));
+      var p = el('p');
+      richText(p, era.narrative);
+      block.appendChild(p);
+      story.appendChild(block);
+      observe(block);
+    });
+  })();
+
+  /* ---------------------------------------------------------------- heatmap */
+  (function heatmap() {
+    var host = $('heatmap');
+    var heat = DATA.rhythm.heat, max = Math.max(1, DATA.rhythm.maxHeat);
+    var days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    var padL = 38, padT = 20, cw = 26, ch = 24, gap = 3;
+    var W = padL + 24 * cw, H = padT + 7 * ch + 14;
+    var s = svg('svg', { viewBox: '0 0 ' + W + ' ' + H, preserveAspectRatio: 'xMinYMid meet' });
+    s.style.width = '100%';
+    s.style.height = 'auto';
+    for (var h = 0; h < 24; h += 3) {
+      var lbl = svg('text', { x: padL + h * cw + 1, y: 12, class: 'axis-label' });
+      lbl.textContent = (h % 12 === 0 ? 12 : h % 12) + (h < 12 ? 'a' : 'p');
+      s.appendChild(lbl);
+    }
+    var cells = [];
+    for (var d = 0; d < 7; d++) {
+      var dl = svg('text', { x: 0, y: padT + d * ch + 16, class: 'axis-label' });
+      dl.textContent = days[d];
+      s.appendChild(dl);
+      for (var hh = 0; hh < 24; hh++) {
+        var v = (heat[d] && heat[d][hh]) || 0;
+        var t = v === 0 ? 0 : 0.12 + 0.88 * Math.pow(v / max, 0.55);
+        var r = svg('rect', {
+          x: padL + hh * cw, y: padT + d * ch, width: cw - gap, height: ch - gap,
+          fill: v === 0 ? 'rgba(255,255,255,0.035)' : heatColor(t), class: 'hm-cell'
+        });
+        (function (rect, day, hour, val) {
+          bindTip(rect, function () {
+            return '<span class="tt-title">' + days[day] + ', ' +
+              (hour % 12 === 0 ? 12 : hour % 12) + (hour < 12 ? 'am' : 'pm') + '</span>' +
+              ttRow('Commits', num(val));
+          });
+        })(r, d, hh, v);
+        s.appendChild(r);
+        cells.push(r);
+      }
+    }
+    host.appendChild(s);
+    observe(host.parentNode.parentNode, function () {
+      cells.forEach(function (c, i) {
+        var row = Math.floor(i / 24), col = i % 24;
+        setTimeout(function () { c.classList.add('in'); }, REDUCED ? 0 : (col * 11 + row * 26));
+      });
+    });
+  })();
+
+  /* ----------------------------------------------------- area / line charts */
+  function areaChart(host, points, opts) {
+    opts = opts || {};
+    var W = 900, H = opts.height || 260, padL = 46, padR = 14, padT = 14, padB = 26;
+    var iw = W - padL - padR, ih = H - padT - padB;
+    var s = svg('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', height: H, preserveAspectRatio: 'none' });
+    var maxV = 0;
+    points.forEach(function (p) { if (p.v > maxV) maxV = p.v; });
+    maxV = Math.max(1, maxV);
+    var n = points.length;
+    var x = function (i) { return padL + (n <= 1 ? iw / 2 : (i / (n - 1)) * iw); };
+    var y = function (v) { return padT + ih - (v / maxV) * ih; };
+
+    for (var g = 0; g <= 4; g++) {
+      var gy = padT + (g / 4) * ih;
+      s.appendChild(svg('line', { x1: padL, x2: W - padR, y1: gy, y2: gy, class: 'grid-line' }));
+      var t = svg('text', { x: 6, y: gy + 3.5, class: 'axis-label' });
+      t.textContent = compact(maxV * (1 - g / 4));
+      s.appendChild(t);
+    }
+
+    var dTop = '', dArea = '';
+    for (var i = 0; i < n; i++) {
+      dTop += (i ? 'L' : 'M') + x(i).toFixed(2) + ' ' + y(points[i].v).toFixed(2) + ' ';
+    }
+    dArea = dTop + 'L' + x(n - 1).toFixed(2) + ' ' + (padT + ih) + ' L' + x(0).toFixed(2) + ' ' + (padT + ih) + ' Z';
+
+    var gradId = 'grad-' + Math.random().toString(36).slice(2, 8);
+    var defs = svg('defs');
+    var lg = svg('linearGradient', { id: gradId, x1: '0', y1: '0', x2: '0', y2: '1' });
+    var st1 = svg('stop', { offset: '0%', 'stop-color': opts.color || '#5b8cff', 'stop-opacity': '0.55' });
+    var st2 = svg('stop', { offset: '100%', 'stop-color': opts.color || '#5b8cff', 'stop-opacity': '0.02' });
+    lg.appendChild(st1); lg.appendChild(st2); defs.appendChild(lg); s.appendChild(defs);
+
+    var grow = svg('g', {});
+    grow.style.transformOrigin = '0px ' + (padT + ih) + 'px';
+    if (!REDUCED) {
+      grow.style.transform = 'scaleY(0.02)';
+      grow.style.transition = 'transform 1.25s cubic-bezier(0.22,1,0.36,1)';
+    }
+    grow.appendChild(svg('path', { d: dArea, fill: 'url(#' + gradId + ')' }));
+    grow.appendChild(svg('path', {
+      d: dTop, fill: 'none', stroke: opts.color || '#5b8cff', 'stroke-width': '2',
+      'stroke-linejoin': 'round', 'stroke-linecap': 'round'
+    }));
+    s.appendChild(grow);
+
+    /* x labels */
+    var ticks = Math.min(6, n);
+    for (var k = 0; k < ticks; k++) {
+      var idx = ticks === 1 ? 0 : Math.round((k / (ticks - 1)) * (n - 1));
+      var tx = svg('text', { x: x(idx), y: H - 6, class: 'axis-label', 'text-anchor': k === 0 ? 'start' : (k === ticks - 1 ? 'end' : 'middle') });
+      tx.textContent = points[idx].label;
+      s.appendChild(tx);
+    }
+
+    /* hover */
+    var marker = svg('line', { y1: padT, y2: padT + ih, class: 'grid-line', stroke: 'rgba(255,255,255,0.35)', opacity: '0' });
+    s.appendChild(marker);
+    var dot = svg('circle', { r: 4, fill: opts.color || '#5b8cff', stroke: '#0a0c12', 'stroke-width': '2', opacity: '0' });
+    s.appendChild(dot);
+    var hit = svg('rect', { x: padL, y: padT, width: iw, height: ih, fill: 'transparent' });
+    s.appendChild(hit);
+    hit.addEventListener('mousemove', function (ev) {
+      var box = s.getBoundingClientRect();
+      var rel = ((ev.clientX - box.left) / box.width) * W;
+      var i = n <= 1 ? 0 : Math.round(((rel - padL) / iw) * (n - 1));
+      i = clamp(i, 0, n - 1);
+      var p = points[i];
+      marker.setAttribute('x1', x(i)); marker.setAttribute('x2', x(i));
+      marker.setAttribute('opacity', '1');
+      dot.setAttribute('cx', x(i)); dot.setAttribute('cy', y(p.v));
+      dot.setAttribute('opacity', '1');
+      tipShow('<span class="tt-title">' + esc(p.title) + '</span>' + p.tip, ev);
+    });
+    hit.addEventListener('mouseleave', function () {
+      marker.setAttribute('opacity', '0'); dot.setAttribute('opacity', '0'); tipHide();
+    });
+
+    host.appendChild(s);
+    return function play() { grow.style.transform = 'scaleY(1)'; };
+  }
+
+  (function velocity() {
+    var host = $('velocityChart');
+    var weeks = DATA.rhythm.weeks || [];
+    if (!weeks.length) { host.appendChild(el('p', 'lede', 'No commits in range.')); return; }
+    var pts = weeks.map(function (w) {
+      return {
+        v: w.commits,
+        label: fmtShort(w.t),
+        title: 'Week of ' + fmtDate(w.t),
+        tip: ttRow('Commits', num(w.commits)) + ttRow('Lines', '+' + compact(w.added) + ' / -' + compact(w.removed))
+      };
+    });
+    if (pts.length === 1) pts = [pts[0], pts[0]];
+    var play = areaChart(host, pts, { color: '#5b8cff', height: 260 });
+    observe(host.parentNode, play);
+  })();
+
+  /* ------------------------------------------------------------ growth area */
+  (function growth() {
+    var host = $('growthChart'), legend = $('growthLegend');
+    var langs = DATA.growth.languages || [], rows = (DATA.growth.series || []).slice();
+    // One week of history still deserves a readable band rather than a hairline.
+    if (rows.length === 1) rows = [rows[0], rows[0]];
+    if (!langs.length || !rows.length) { host.appendChild(el('p', 'lede', 'Not enough diff data to chart growth.')); return; }
+
+    var W = 900, H = 320, padL = 50, padR = 14, padT = 14, padB = 26;
+    var iw = W - padL - padR, ih = H - padT - padB;
+    var n = rows.length;
+    var totals = rows.map(function (r) {
+      var t = 0;
+      for (var i = 1; i < r.length; i++) t += r[i];
+      return t;
+    });
+    var maxV = Math.max(1, Math.max.apply(null, totals));
+    var x = function (i) { return padL + (n <= 1 ? iw / 2 : (i / (n - 1)) * iw); };
+    var y = function (v) { return padT + ih - (v / maxV) * ih; };
+
+    var s = svg('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', height: H, preserveAspectRatio: 'none' });
+    for (var g = 0; g <= 4; g++) {
+      var gy = padT + (g / 4) * ih;
+      s.appendChild(svg('line', { x1: padL, x2: W - padR, y1: gy, y2: gy, class: 'grid-line' }));
+      var t = svg('text', { x: 6, y: gy + 3.5, class: 'axis-label' });
+      t.textContent = compact(maxV * (1 - g / 4));
+      s.appendChild(t);
+    }
+
+    /* era bands behind the chart */
+    (DATA.eras || []).forEach(function (era, ei) {
+      var i0 = 0, i1 = n - 1;
+      for (var i = 0; i < n; i++) { if (rows[i][0] <= era.startTs) i0 = i; }
+      for (var j = n - 1; j >= 0; j--) { if (rows[j][0] >= era.endTs) i1 = j; }
+      if (i1 <= i0) i1 = Math.min(n - 1, i0 + 1);
+      var rx = x(i0), rw = Math.max(2, x(i1) - x(i0));
+      var band = svg('rect', { x: rx, y: padT, width: rw, height: ih, fill: eraColor(ei), opacity: '0.07' });
+      s.appendChild(band);
+      var lab = svg('text', { x: rx + 5, y: padT + 12, class: 'axis-label', fill: eraColor(ei) });
+      lab.textContent = era.label;
+      s.appendChild(lab);
+    });
+
+    var layers = [];
+    var base = new Array(n).fill(0);
+    for (var li = langs.length - 1; li >= 0; li--) {
+      var upper = base.map(function (b, i) { return b + rows[i][li + 1]; });
+      var d = '';
+      for (var i2 = 0; i2 < n; i2++) d += (i2 ? 'L' : 'M') + x(i2).toFixed(2) + ' ' + y(upper[i2]).toFixed(2) + ' ';
+      for (var i3 = n - 1; i3 >= 0; i3--) d += 'L' + x(i3).toFixed(2) + ' ' + y(base[i3]).toFixed(2) + ' ';
+      d += 'Z';
+      layers.push({ d: d, idx: li });
+      base = upper;
+    }
+    var grow = svg('g', {});
+    grow.style.transformOrigin = '0px ' + (padT + ih) + 'px';
+    if (!REDUCED) {
+      grow.style.transform = 'scaleY(0.02)';
+      grow.style.transition = 'transform 1.4s cubic-bezier(0.22,1,0.36,1)';
+    }
+    layers.forEach(function (layer) {
+      var p = svg('path', {
+        d: layer.d, fill: langColor(langs[layer.idx]), opacity: '0.82',
+        stroke: 'rgba(7,8,12,0.55)', 'stroke-width': '0.6'
+      });
+      grow.appendChild(p);
+    });
+    s.appendChild(grow);
+
+    var ticks = Math.min(6, n);
+    for (var k = 0; k < ticks; k++) {
+      var idx = ticks === 1 ? 0 : Math.round((k / (ticks - 1)) * (n - 1));
+      var tx = svg('text', { x: x(idx), y: H - 6, class: 'axis-label', 'text-anchor': k === 0 ? 'start' : (k === ticks - 1 ? 'end' : 'middle') });
+      tx.textContent = fmtShort(rows[idx][0]);
+      s.appendChild(tx);
+    }
+
+    var marker = svg('line', { y1: padT, y2: padT + ih, stroke: 'rgba(255,255,255,0.35)', opacity: '0' });
+    s.appendChild(marker);
+    var hit = svg('rect', { x: padL, y: padT, width: iw, height: ih, fill: 'transparent' });
+    s.appendChild(hit);
+    hit.addEventListener('mousemove', function (ev) {
+      var box = s.getBoundingClientRect();
+      var rel = ((ev.clientX - box.left) / box.width) * W;
+      var i = n <= 1 ? 0 : Math.round(((rel - padL) / iw) * (n - 1));
+      i = clamp(i, 0, n - 1);
+      marker.setAttribute('x1', x(i)); marker.setAttribute('x2', x(i)); marker.setAttribute('opacity', '1');
+      var html = '<span class="tt-title">Week of ' + fmtDate(rows[i][0]) + '</span>' + ttRow('Total', num(totals[i]) + ' lines');
+      langs.forEach(function (lang, li2) {
+        if (rows[i][li2 + 1] > 0) html += ttRow('<i style="display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:6px;background:' +
+          langColor(lang) + '"></i>' + esc(lang), num(rows[i][li2 + 1]));
+      });
+      tipShow(html, ev);
+    });
+    hit.addEventListener('mouseleave', function () { marker.setAttribute('opacity', '0'); tipHide(); });
+
+    host.appendChild(s);
+    langs.forEach(function (lang) {
+      var item = el('span', null);
+      var i = el('i');
+      i.style.background = langColor(lang);
+      item.appendChild(i);
+      item.appendChild(el('b', null, lang));
+      legend.appendChild(item);
+    });
+    observe(host.parentNode, function () { grow.style.transform = 'scaleY(1)'; });
+  })();
+
+  /* --------------------------------------------------------------- treemap */
+  (function treemap() {
+    var host = $('treemap'), crumbs = $('treemapCrumbs'), scale = $('churnScale');
+    var layouts = DATA.hotspots.layouts || {};
+    var maxChurn = Math.max(1, DATA.hotspots.maxChurn);
+    var logMax = Math.log(maxChurn + 1);
+    var current = '';
+    var played = false;
+
+    if (!layouts['']) {
+      host.appendChild(el('p', 'lede', 'No tracked text files found at HEAD.'));
+      return;
+    }
+
+    var lo = el('span', null, 'rarely changed');
+    var bar = el('span', 'bar');
+    bar.style.background = 'linear-gradient(90deg,' + churnColor(0) + ',' + churnColor(0.5) + ',' + churnColor(1) + ')';
+    var hi = el('span', null, num(maxChurn) + ' commits per file');
+    scale.appendChild(lo); scale.appendChild(bar); scale.appendChild(hi);
+
+    function draw(path, animate) {
+      var rects = layouts[path] || [];
+      host.textContent = '';
+      var W = host.clientWidth || 800, H = host.clientHeight || 480;
+      rects.forEach(function (r, i) {
+        var tile = el('div', 'tm-tile' + (r.isDir ? ' dir' : ''));
+        var w = r.w * W, h = r.h * H;
+        tile.style.left = (r.x * W).toFixed(2) + 'px';
+        tile.style.top = (r.y * H).toFixed(2) + 'px';
+        tile.style.width = Math.max(0, w - 1).toFixed(2) + 'px';
+        tile.style.height = Math.max(0, h - 1).toFixed(2) + 'px';
+        var t = Math.log((r.heat == null ? r.churn : r.heat) + 1) / logMax;
+        tile.style.background = churnColor(t);
+        if (w > 46 && h > 20) {
+          var label = el('span', null, r.name.length > 46 ? r.name.slice(0, 44) + '…' : r.name);
+          tile.appendChild(label);
+        }
+        bindTip(tile, function () {
+          var html = '<span class="tt-title">' + esc(r.path.indexOf(' ') >= 0 ? r.name : (r.path || '/')) + '</span>' +
+            ttRow('Lines today', num(r.loc)) +
+            ttRow(r.isDir ? 'Commits (subtree)' : 'Commits', num(r.churn)) +
+            (r.isDir ? ttRow('Commits per file', num(r.heat)) : '');
+          if (!r.isDir) {
+            html += ttRow('Lines +/-', '+' + num(r.added) + ' / -' + num(r.removed));
+            if (r.topAuthor) html += ttRow('Top author', esc(r.topAuthor));
+            if (r.language) html += ttRow('Language', esc(r.language));
+          } else if (r.childCount) {
+            html += ttRow('Files', num(r.childCount)) + '<div class="tt-row"><span>Click to zoom</span><span></span></div>';
+          }
+          return html;
+        });
+        if (r.isDir && layouts[r.path]) {
+          tile.addEventListener('click', function () { setPath(r.path); });
+        }
+        host.appendChild(tile);
+        if (!animate || REDUCED) tile.classList.add('in');
+        else setTimeout(function () { tile.classList.add('in'); }, Math.min(520, i * 9));
+      });
+      renderCrumbs(path);
+    }
+
+    function renderCrumbs(path) {
+      crumbs.textContent = '';
+      var parts = path ? path.split('/') : [];
+      var b0 = el('button', null, DATA.meta.repoName + (parts.length ? ' /' : ''));
+      b0.addEventListener('click', function () { setPath(''); });
+      crumbs.appendChild(b0);
+      var acc = '';
+      parts.forEach(function (p, i) {
+        acc = acc ? acc + '/' + p : p;
+        var target = acc;
+        var b = el('button', null, p + (i < parts.length - 1 ? ' /' : ''));
+        b.addEventListener('click', function () { setPath(target); });
+        crumbs.appendChild(b);
+      });
+    }
+
+    function setPath(path) {
+      if (!layouts[path]) return;
+      current = path;
+      draw(path, true);
+    }
+
+    observe(host.parentNode.parentNode, function () {
+      played = true;
+      draw(current, true);
+    });
+    var resizeTimer = null;
+    window.addEventListener('resize', function () {
+      if (!played) return;
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(function () { draw(current, false); }, 160);
+    });
+  })();
+
+  /* ------------------------------------------------------------- knowledge */
+  (function knowledge() {
+    var row = $('busRow'), own = $('ownership'), legend = $('authorLegend');
+    var k = DATA.knowledge;
+    var cards = [
+      { v: num(k.busFactor), s: 'people account for half of every line ever changed' },
+      { v: num(DATA.hero.authors), s: 'contributors in total' },
+      { v: (DATA.authors[0] ? Math.round((DATA.authors[0].commits / Math.max(1, DATA.hero.commits)) * 100) + '%' : '—'), s: 'of commits from the single most active author' }
+    ];
+    cards.forEach(function (c) {
+      var card = el('div', 'stat-card');
+      card.appendChild(el('b', null, c.v));
+      card.appendChild(el('span', null, c.s));
+      row.appendChild(card);
+    });
+
+    var bars = [];
+    (k.dirs || []).forEach(function (d) {
+      var wrap = el('div', 'own-row');
+      var head = el('div', 'own-head');
+      var code = el('code', null, d.name);
+      head.appendChild(code);
+      head.appendChild(el('em', null, compact(d.lines) + ' lines · bus factor ' + d.busFactor));
+      wrap.appendChild(head);
+      var bar = el('div', 'own-bar');
+      var total = Math.max(1, d.shares.reduce(function (a, b) { return a + b.lines; }, 0));
+      d.shares.forEach(function (sh) {
+        var seg = el('i');
+        seg.style.background = authorColor(sh.author);
+        seg.dataset.w = ((sh.lines / total) * 100).toFixed(2) + '%';
+        bindTip(seg, function () {
+          return '<span class="tt-title">' + esc(d.name) + '</span>' +
+            ttRow(esc(sh.author), num(sh.lines) + ' lines (' + Math.round((sh.lines / total) * 100) + '%)');
+        });
+        bar.appendChild(seg);
+        bars.push(seg);
+      });
+      wrap.appendChild(bar);
+      own.appendChild(wrap);
+    });
+
+    (DATA.knowledge.authors || []).slice(0, 14).forEach(function (a) {
+      var item = el('span', null);
+      var i = el('i');
+      i.style.background = a.color;
+      item.appendChild(i);
+      item.appendChild(el('b', null, a.name + ' · ' + num(a.commits)));
+      legend.appendChild(item);
+    });
+
+    observe(own.parentNode, function () {
+      bars.forEach(function (b, i) {
+        setTimeout(function () { b.style.width = b.dataset.w; }, REDUCED ? 0 : i * 12);
+      });
+    });
+  })();
+
+  /* --------------------------------------------------- coupling force graph */
+  (function coupling() {
+    var host = $('graph'), table = $('couplingTable');
+    var nodes = (DATA.coupling.nodes || []).map(function (n) { return { id: n.id, label: n.label, dir: n.dir, degree: n.degree, weight: n.weight }; });
+    var edges = DATA.coupling.edges || [];
+    var pairs = DATA.coupling.pairs || [];
+
+    /* table */
+    var thead = el('thead');
+    var htr = el('tr');
+    ['#', 'File A', 'File B', 'Together', 'Strength'].forEach(function (h) { htr.appendChild(el('th', null, h)); });
+    thead.appendChild(htr);
+    table.appendChild(thead);
+    var tbody = el('tbody');
+    var miniBars = [];
+    if (!pairs.length) {
+      var tr0 = el('tr');
+      var td0 = el('td', null, 'No file pair changed together more than once in this range.');
+      td0.colSpan = 5;
+      tr0.appendChild(td0);
+      tbody.appendChild(tr0);
+    }
+    pairs.forEach(function (p, i) {
+      var tr = el('tr');
+      tr.appendChild(el('td', null, String(i + 1)));
+      var a = el('td'); a.appendChild(el('code', null, p.a)); tr.appendChild(a);
+      var b = el('td'); b.appendChild(el('code', null, p.b)); tr.appendChild(b);
+      tr.appendChild(el('td', null, num(p.count) + '×'));
+      var sc = el('td', 'bar-cell');
+      var mb = el('div', 'mini-bar');
+      mb.dataset.w = Math.round(p.strength * 100) + '%';
+      sc.appendChild(mb);
+      sc.appendChild(el('span', null, Math.round(p.strength * 100) + '%'));
+      miniBars.push(mb);
+      tr.appendChild(sc);
+      tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+    observe(table.parentNode.parentNode, function () {
+      miniBars.forEach(function (m, i) { setTimeout(function () { m.style.width = m.dataset.w; }, REDUCED ? 0 : i * 18); });
+    });
+
+    if (!nodes.length) {
+      host.parentNode.appendChild(el('p', 'lede', 'Not enough co-change signal for a graph.'));
+      host.style.display = 'none';
+      return;
+    }
+
+    var W = 900, H = 520;
+    host.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+    host.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+
+    /* seed on a circle so the first frames look deliberate rather than random */
+    nodes.forEach(function (n, i) {
+      var a = (i / nodes.length) * Math.PI * 2;
+      n.x = W / 2 + Math.cos(a) * (W * 0.26);
+      n.y = H / 2 + Math.sin(a) * (H * 0.3);
+      n.vx = 0; n.vy = 0;
+      n.r = clamp(4 + Math.sqrt(n.weight) * 1.5, 4.5, 17);
+    });
+
+    var edgeEls = edges.map(function (e) {
+      var line = svg('line', { class: 'g-edge', 'stroke-width': clamp(0.7 + e.strength * 3.4, 0.7, 4.2) });
+      line.style.opacity = REDUCED ? '1' : '0';
+      line.style.transition = 'opacity 0.9s cubic-bezier(0.22,1,0.36,1)';
+      host.appendChild(line);
+      return line;
+    });
+    var nodeEls = nodes.map(function (n, i) {
+      var g = svg('g', { class: 'g-node' });
+      var c = svg('circle', { r: n.r, fill: dirColor(n.dir), stroke: 'rgba(7,8,12,0.9)', 'stroke-width': '1.5' });
+      g.appendChild(c);
+      var label = svg('text', { x: n.r + 4, y: 3.5 });
+      label.textContent = n.label.length > 22 ? n.label.slice(0, 20) + '…' : n.label;
+      g.appendChild(label);
+      g.style.opacity = REDUCED ? '1' : '0';
+      g.style.transition = 'opacity 0.7s cubic-bezier(0.22,1,0.36,1)';
+      bindTip(g, function () {
+        return '<span class="tt-title">' + esc(n.id) + '</span>' +
+          ttRow('Commits', num(n.weight)) + ttRow('Coupled with', num(n.degree) + ' file(s)');
+      });
+      /* drag */
+      g.addEventListener('pointerdown', function (ev) {
+        ev.preventDefault();
+        g.setPointerCapture(ev.pointerId);
+        n.fixed = true;
+        var box = host.getBoundingClientRect();
+        var move = function (e2) {
+          n.x = ((e2.clientX - box.left) / box.width) * W;
+          n.y = ((e2.clientY - box.top) / box.height) * H;
+          n.vx = 0; n.vy = 0;
+          alpha = Math.max(alpha, 0.35);
+          if (!running) { running = true; requestAnimationFrame(tick); }
+        };
+        var up = function () {
+          n.fixed = false;
+          g.removeEventListener('pointermove', move);
+          g.removeEventListener('pointerup', up);
+        };
+        g.addEventListener('pointermove', move);
+        g.addEventListener('pointerup', up);
+      });
+      host.appendChild(g);
+      void i;
+      return g;
+    });
+
+    function dirColor(dir) {
+      var h = 0;
+      for (var i = 0; i < dir.length; i++) h = (h * 31 + dir.charCodeAt(i)) | 0;
+      return 'hsl(' + ((Math.abs(h) * 47) % 360) + ' 64% 62%)';
+    }
+
+    /* A tiny force simulation: Coulomb repulsion, Hooke springs on the coupled
+       pairs, and a weak pull to the centre. ~60 nodes, so O(n^2) is free. */
+    var alpha = 1, running = false;
+    function step() {
+      var i, j, a, b, dx, dy, d2, d, f;
+      for (i = 0; i < nodes.length; i++) {
+        a = nodes[i];
+        for (j = i + 1; j < nodes.length; j++) {
+          b = nodes[j];
+          dx = b.x - a.x; dy = b.y - a.y;
+          d2 = dx * dx + dy * dy;
+          if (d2 < 1) { d2 = 1; dx = (Math.random() - 0.5); dy = (Math.random() - 0.5); }
+          d = Math.sqrt(d2);
+          f = (5200 * alpha) / d2;
+          var ux = dx / d, uy = dy / d;
+          a.vx -= ux * f; a.vy -= uy * f;
+          b.vx += ux * f; b.vy += uy * f;
+        }
+      }
+      for (i = 0; i < edges.length; i++) {
+        a = nodes[edges[i].source]; b = nodes[edges[i].target];
+        if (!a || !b) continue;
+        dx = b.x - a.x; dy = b.y - a.y;
+        d = Math.sqrt(dx * dx + dy * dy) || 1;
+        var rest = 72 + (1 - edges[i].strength) * 78;
+        f = ((d - rest) * 0.055 * alpha);
+        var vx = (dx / d) * f, vy = (dy / d) * f;
+        a.vx += vx; a.vy += vy;
+        b.vx -= vx; b.vy -= vy;
+      }
+      for (i = 0; i < nodes.length; i++) {
+        a = nodes[i];
+        a.vx += (W / 2 - a.x) * 0.0035 * alpha;
+        a.vy += (H / 2 - a.y) * 0.0045 * alpha;
+        if (a.fixed) { a.vx = 0; a.vy = 0; continue; }
+        a.vx *= 0.86; a.vy *= 0.86;
+        a.x = clamp(a.x + clamp(a.vx, -26, 26), a.r + 6, W - a.r - 70);
+        a.y = clamp(a.y + clamp(a.vy, -26, 26), a.r + 10, H - a.r - 10);
+      }
+      alpha *= 0.985;
+    }
+    function paint() {
+      for (var i = 0; i < edges.length; i++) {
+        var a = nodes[edges[i].source], b = nodes[edges[i].target];
+        if (!a || !b) continue;
+        edgeEls[i].setAttribute('x1', a.x.toFixed(1));
+        edgeEls[i].setAttribute('y1', a.y.toFixed(1));
+        edgeEls[i].setAttribute('x2', b.x.toFixed(1));
+        edgeEls[i].setAttribute('y2', b.y.toFixed(1));
+      }
+      for (var k = 0; k < nodes.length; k++) {
+        nodeEls[k].setAttribute('transform', 'translate(' + nodes[k].x.toFixed(1) + ',' + nodes[k].y.toFixed(1) + ')');
+      }
+    }
+    function tick() {
+      step();
+      paint();
+      if (alpha > 0.008) requestAnimationFrame(tick);
+      else { running = false; alpha = 0.008; }
+    }
+
+    /* settle off-screen so the graph is readable the moment it scrolls in */
+    for (var pre = 0; pre < 90; pre++) step();
+    paint();
+
+    observe(host.parentNode.parentNode, function () {
+      nodeEls.forEach(function (g, i) { setTimeout(function () { g.style.opacity = '1'; }, REDUCED ? 0 : i * 22); });
+      edgeEls.forEach(function (l, i) { setTimeout(function () { l.style.opacity = '1'; }, REDUCED ? 0 : 200 + i * 16); });
+      alpha = 0.55;
+      if (!running) { running = true; requestAnimationFrame(tick); }
+    });
+  })();
+
+  revealAll();
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) tipHide(); });
+})();
+
+</script>
+</body>
+</html>
