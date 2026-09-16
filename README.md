@@ -4,6 +4,10 @@
 
 ![chronicle](docs/screenshot.png)
 
+<p align="center"><img src="docs/chapters.png" width="49%" alt="Auto-detected eras"> <img src="docs/hotspots.png" width="49%" alt="Churn treemap"></p>
+
+> Real report on [expressjs/express](examples/express.html): 6,170 commits, 393 authors, 17 years, parsed in under two seconds. Download the file and open it; it is fully self-contained.
+
 ## Why
 
 A repository's history is the most detailed document a team owns and the one nobody reads. `git log` answers
