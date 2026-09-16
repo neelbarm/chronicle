@@ -1,0 +1,38 @@
+{
+  "name": "chronicle",
+  "version": "0.1.0",
+  "description": "Turn any git repository into a single self-contained, interactive HTML story of how the codebase evolved.",
+  "license": "MIT",
+  "author": "Neel Barmecha",
+  "type": "commonjs",
+  "bin": {
+    "chronicle": "dist/cli.js"
+  },
+  "main": "dist/index.js",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json && node scripts/copy-assets.mjs",
+    "test": "npm run build && node --test test/*.test.js",
+    "demo": "npm run build && node scripts/demo.mjs",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "git",
+    "history",
+    "visualization",
+    "code-archaeology",
+    "report",
+    "cli"
+  ],
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "typescript": "^5.7.2"
+  }
+}
