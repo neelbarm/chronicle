@@ -20,7 +20,7 @@ One command, one file, no server, no dependencies, works offline.
 ## 60-second quickstart
 
 ```bash
-git clone <this repo> chronicle && cd chronicle
+git clone https://github.com/neelbarm/chronicle && cd chronicle
 npm install
 npm run build
 node dist/cli.js ~/some/repo -o report.html --open
