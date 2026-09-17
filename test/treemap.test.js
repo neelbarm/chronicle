@@ -121,3 +121,20 @@ test('layoutLevels merges the tail when a directory has too many children', () =
   assert.equal(level.length, 11);
   assert.ok(level[level.length - 1].name.startsWith('+20 smaller'));
 });
+
+test('a collapsed root still publishes its level at the empty path', () => {
+  // Every tracked file under one directory: collapseChains hands layoutLevels a
+  // root whose path is `src`, but the report always opens at ''.
+  const nested = [
+    { path: 'src/only.ts', loc: 12, churn: 3, added: 12, removed: 0, topAuthor: 'Ada', language: 'TypeScript' },
+    { path: 'src/other.ts', loc: 4, churn: 1, added: 4, removed: 0, topAuthor: 'Ada', language: 'TypeScript' },
+  ];
+  const root = collapseChains(buildTree(nested, 'demo'));
+  assert.equal(root.path, 'src', 'the root collapsed onto src');
+  const { layouts } = layoutLevels(root);
+  assert.ok(layouts[''], 'the top level is reachable at the empty path');
+  assert.deepEqual(
+    layouts[''].map((r) => r.name),
+    ['only.ts', 'other.ts'],
+  );
+});
