@@ -118,8 +118,14 @@ async function main(): Promise<void> {
     );
     if (opts.quiet) process.stdout.write(`${outPath}\n`);
     if (opts.open) {
-      const cmd = process.platform === 'darwin' ? 'open' : process.platform === 'win32' ? 'start' : 'xdg-open';
-      spawn(cmd, [outPath], { detached: true, stdio: 'ignore' }).unref();
+      // `start` is a cmd.exe builtin rather than an executable, and a headless
+      // Linux box often has no xdg-open at all — an unhandled spawn error would
+      // take the process down with a stack trace after the report was written.
+      const cmd = process.platform === 'darwin' ? 'open' : process.platform === 'win32' ? 'cmd' : 'xdg-open';
+      const args = process.platform === 'win32' ? ['/c', 'start', '', outPath] : [outPath];
+      const child = spawn(cmd, args, { detached: true, stdio: 'ignore' });
+      child.on('error', (e) => log(`could not open the report with ${cmd}: ${(e as Error).message}`));
+      child.unref();
     }
   } catch (e) {
     process.stderr.write(`chronicle: ${(e as Error).message}\n`);
