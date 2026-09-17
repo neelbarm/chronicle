@@ -61,13 +61,42 @@ export interface ParsedPath {
 }
 
 /**
+ * Index of the closing quote of a C-quoted token starting at position 0, or -1
+ * when the field does not open with one.
+ */
+function quotedTokenEnd(s: string): number {
+  if (s[0] !== '"') return -1;
+  for (let i = 1; i < s.length; i++) {
+    if (s[i] === '\\') {
+      i++;
+      continue;
+    }
+    if (s[i] === '"') return i;
+  }
+  return -1;
+}
+
+/**
  * Splits the path column of a --numstat line, resolving git's two rename
  * spellings:
  *   `old.ts => new.ts`
  *   `src/{old => new}/file.ts`   (shared prefix/suffix factored out)
+ *
+ * When either side needs quoting git always uses the first spelling and quotes
+ * each side on its own — `"öld.ts" => "nëw.ts"` — so the arrow has to be found
+ * before anything is decoded. Unquoting the whole field first would strip the
+ * outer pair of quotes and leave the inner ones stranded in the path.
  */
 export function parsePathField(field: string): ParsedPath {
-  const raw = unquotePath(field.trim());
+  const trimmed = field.trim();
+  const q = quotedTokenEnd(trimmed);
+  if (q > 0 && trimmed.startsWith(' => ', q + 1)) {
+    return {
+      path: normalizeSlashes(unquotePath(trimmed.slice(q + 5).trim())),
+      from: normalizeSlashes(unquotePath(trimmed.slice(0, q + 1))),
+    };
+  }
+  const raw = unquotePath(trimmed);
   const open = raw.indexOf('{');
   const arrowInBrace = open >= 0 ? raw.indexOf(' => ', open) : -1;
   const close = arrowInBrace >= 0 ? raw.indexOf('}', arrowInBrace) : -1;

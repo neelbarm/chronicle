@@ -117,3 +117,33 @@ test('parses author, date and subject fields', () => {
   assert.equal(head.subject, 'Rename the parser');
   assert.equal(head.ts, Date.parse('2024-06-03T09:15:00+02:00'));
 });
+
+test('splits renames whose sides are quoted separately', () => {
+  // git always uses the `old => new` spelling when a side needs quoting, and
+  // quotes each side on its own. Decoding the field as a whole used to leave
+  // the inner quotes in the path.
+  assert.deepEqual(parsePathField('"h\\303\\251llo w\\303\\266rld.md" => "h\\303\\251llo w\\303\\266rld renamed.md"'), {
+    path: 'héllo wörld renamed.md',
+    from: 'héllo wörld.md',
+  });
+  assert.deepEqual(parsePathField('"a b.txt" => "dir with space/c d.txt"'), {
+    path: 'dir with space/c d.txt',
+    from: 'a b.txt',
+  });
+  // A single quoted path is still just a path, arrow or not.
+  assert.deepEqual(parsePathField('"say \\"hi\\".txt"'), { path: 'say "hi".txt' });
+});
+
+test('canonicalises history across a quoted rename', () => {
+  const log =
+    rec('b2', 'Ada Lovelace', '2024-06-04T10:00:00+00:00', 'b1', 'Rename it', [
+      '0\t0\t"h\\303\\251llo w\\303\\266rld.md" => "h\\303\\251llo w\\303\\266rld renamed.md"',
+    ]) +
+    rec('b1', 'Ada Lovelace', '2024-06-03T10:00:00+00:00', '', 'Add it', ['4\t0\t"h\\303\\251llo w\\303\\266rld.md"']);
+  const commits = parseLog(log);
+  assert.equal(commits[0].files[0].path, 'héllo wörld renamed.md');
+  assert.equal(commits[0].files[0].renamedFrom, 'héllo wörld.md');
+  // The earlier commit must land on the same identity, not on a second file.
+  assert.equal(commits[1].files[0].path, 'héllo wörld renamed.md');
+  assert.equal(commits[1].files[0].added, 4);
+});
