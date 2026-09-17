@@ -4,6 +4,8 @@
 
 ![chronicle](docs/screenshot.png)
 
+![chronicle in motion](docs/demo.gif)
+
 <p align="center"><img src="docs/chapters.png" width="49%" alt="Auto-detected eras"> <img src="docs/hotspots.png" width="49%" alt="Churn treemap"></p>
 
 > Real report on [expressjs/express](examples/express.html): 6,170 commits, 393 authors, 17 years, parsed in under two seconds. Download the file and open it; it is fully self-contained.
