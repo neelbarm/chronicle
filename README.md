@@ -60,14 +60,17 @@ Writes `examples/mixpilot.html` and `examples/chronicle.html`, running read-only
 
 **Streaming git log parse.** One `git log --numstat` process, stdout consumed as it arrives with back pressure,
 parsed by a chunk-safe incremental parser. Records are separated by `\x1e` and fields by `\x1f` so subjects
-containing anything at all stay parseable. Renames (`src/{a => b}.ts` and `a.txt => b.txt`), C-quoted paths with
-octal escapes, binary files (`-`/`-`), empty commits and merge commits are all handled. Because git emits
+containing quotes, tabs, separators or markup stay parseable. Renames (`src/{a => b}.ts`, `a.txt => b.txt` and the
+`"öld.md" => "nëw.md"` spelling git uses when a side needs quoting), C-quoted paths with octal escapes, binary
+files (`-`/`-`), empty commits and merge commits are all handled. Because git emits
 newest-first, renames resolve *forward*: when the parser meets `a.ts => b.ts` it knows every earlier mention of
 `a.ts` is the file called `b.ts` today, so a file's churn stays on one identity across its whole life. Nothing but
 counters is retained — 6,000 commits of express parse in under a second in ~100 MB.
 
-**Current LOC.** `git ls-files` plus a single `git grep -I -c ''` — one process that reports line counts for every
-tracked text file and already knows which blobs are binary, instead of tens of thousands of file reads.
+**Current LOC.** `git ls-tree -r -z HEAD` plus a single `git grep -I -c -z ''` — one process that reports line
+counts for every tracked text file at HEAD and already knows which blobs are binary, instead of tens of thousands
+of file reads. Both are asked for NUL-separated output, so a filename with a space, a quote or a non-ASCII byte in
+it comes back the same way from each of them.
 
 **Churn and hotspots.** Per-file commit counts and +/- lines are folded into a directory tree, then laid out with a
 squarified treemap (Bruls/Huizing/van Wijk). The layout for *every* directory level is precomputed server-side in
@@ -134,7 +137,7 @@ request is a single `fetch` to the Messages API — and nothing but the aggregat
 
 ```bash
 npm run build   # tsc -> dist/, plus the browser assets
-npm test        # node:test — parser, era segmentation, treemap layout, co-change counting
+npm test        # node:test — parser, git plumbing, era segmentation, treemap layout, co-change counting
 npm run demo    # regenerate examples/
 ```
 

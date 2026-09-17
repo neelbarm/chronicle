@@ -2,7 +2,7 @@
 /**
  * `npm run demo` — builds the two example reports shipped in examples/.
  * Every repository is read strictly read-only (chronicle only ever runs
- * `git log`, `git ls-files`, `git grep` and `git rev-parse`).
+ * `git log`, `git ls-tree`, `git grep`, `git rev-parse` and `git config --get`).
  */
 import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, statSync } from 'node:fs';
