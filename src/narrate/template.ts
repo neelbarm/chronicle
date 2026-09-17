@@ -122,7 +122,8 @@ function eraParagraph(era: Era, prev: Era | undefined, isLast: boolean, i: numbe
   } else {
     sentences.push(
       `The busiest week of the period carried ${plural(era.peakWeekCommits, 'commit')}, ` +
-        `and ${plural(era.added, 'line')} were added while ${era.removed.toLocaleString('en-US')} came out.`,
+        `and ${plural(era.added, 'line')} ${era.added === 1 ? 'was' : 'were'} added while ` +
+        `${era.removed.toLocaleString('en-US')} came out.`,
     );
   }
 
@@ -132,7 +133,10 @@ function eraParagraph(era: Era, prev: Era | undefined, isLast: boolean, i: numbe
     const focusShare = era.commits > 0 ? Math.round((focus.commits / Math.max(1, era.commits)) * 100) : 0;
     sentences.push(
       `Attention sat on ${joinList(dirs)}` +
-        (focusShare > 0 ? `, with ${niceDir(focus.name)} touched in roughly ${focusShare}% of the chapter's commits` : '') +
+        // With a single directory the clause would just name it twice.
+        (focusShare > 0 && era.dirs.length > 1
+          ? `, with ${niceDir(focus.name)} touched in roughly ${focusShare}% of the chapter's commits`
+          : '') +
         '.',
     );
   }
