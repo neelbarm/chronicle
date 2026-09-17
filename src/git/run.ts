@@ -142,34 +142,46 @@ export async function* streamCommits(root: string, opts: LogOptions): AsyncGener
  * knows which blobs are binary. Reading the commit rather than the working tree
  * keeps the report consistent with the history it describes, whatever is
  * currently uncommitted on disk.
+ *
+ * `-z` is what makes the paths usable: without it git C-quotes any path with a
+ * quote, a control character or a non-ASCII byte in it, and those names would
+ * then never match the raw ones `git ls-tree -z` reports. With it each record is
+ * `rev:path\0count\n`, so the path survives byte for byte.
  */
 export async function currentLineCounts(root: string, rev = 'HEAD'): Promise<Map<string, number>> {
   const counts = new Map<string, number>();
   await new Promise<void>((res, rej) => {
-    const p = spawn('git', ['--no-pager', 'grep', '-I', '-c', '--no-color', '-e', '', rev, '--', '.'], {
+    const p = spawn('git', ['--no-pager', 'grep', '-I', '-c', '-z', '--no-color', '-e', '', rev, '--', '.'], {
       cwd: root,
       stdio: ['ignore', 'pipe', 'ignore'],
     });
     const decoder = new StringDecoder('utf8');
-    let tail = '';
-    const take = (line: string) => {
-      if (!line) return;
-      const idx = line.lastIndexOf(':');
-      if (idx <= 0) return;
-      let path = line.slice(0, idx);
-      if (path.startsWith(rev + ':')) path = path.slice(rev.length + 1);
-      const n = Number(line.slice(idx + 1));
-      if (Number.isFinite(n)) counts.set(path, n);
+    let buf = '';
+    const drain = (final: boolean) => {
+      for (;;) {
+        const nul = buf.indexOf('\0');
+        if (nul < 0) break;
+        // The count runs from the NUL to the newline that ends the record. A
+        // path may itself contain newlines, which is why the NUL leads.
+        const nl = buf.indexOf('\n', nul);
+        if (nl < 0 && !final) break;
+        const end = nl < 0 ? buf.length : nl;
+        let path = buf.slice(0, nul);
+        const n = Number(buf.slice(nul + 1, end).trim());
+        buf = buf.slice(end + 1);
+        if (path.startsWith(rev + ':')) path = path.slice(rev.length + 1);
+        if (path && Number.isFinite(n)) counts.set(path, n);
+        if (nl < 0) break;
+      }
     };
-    p.stdout.on('data', (buf: Buffer) => {
-      tail += decoder.write(buf);
-      const lines = tail.split('\n');
-      tail = lines.pop() ?? '';
-      for (const l of lines) take(l);
+    p.stdout.on('data', (chunk: Buffer) => {
+      buf += decoder.write(chunk);
+      drain(false);
     });
     p.on('error', () => rej(new GitError('git grep failed')));
     p.on('close', () => {
-      take(tail.trim());
+      buf += decoder.end();
+      drain(true);
       res();
     });
   });
